@@ -27,7 +27,7 @@ export function ensureInstalledCorrectPrismaPackage() {
     throw new Error(
       `Looks like you use an incorrect version of the Prisma packages: "${installedVersion}". ` +
         `Please ensure that you have installed a version ` +
-        `that meets 'typegraphql-prisma' requirement: "${versionRequirement}".`
+        `that meets 'prisma-nestjs-dto-generator' requirement: "${versionRequirement}".`
     );
   }
 }
