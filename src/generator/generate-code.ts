@@ -1,10 +1,10 @@
 import { DMMF as PrismaDMMF } from "@prisma/client/runtime";
-import { promises as fs } from "fs";
 import * as path from "path";
 import { CompilerOptions, ModuleKind, Project, ScriptTarget } from "ts-morph";
 import { GenerateCodeOptions } from "./options";
 import { createDtoTemplate } from "./templates/dto.template";
 import prettier from "prettier";
+import { createEnumTemplate } from "./templates/enum.template";
 
 const baseCompilerOptions: CompilerOptions = {
   target: ScriptTarget.ES2019,
@@ -36,38 +36,27 @@ async function createServicesFromModels(
   dmmf: PrismaDMMF.Document,
   options: GenerateCodeOptions
 ) {
-  const dtoPath = path.join(options.outputDirPath, "dto");
-
-  console.log(dtoPath);
-  console.log(dmmf.datamodel.models);
-
-  // await fs.mkdir(path.join(servicePath), { recursive: true });
-
-  // const barrelFilePath = path.join(servicePath, "index.ts");
-  // const serviceBarrelFile = project.createSourceFile(
-  //   barrelFilePath,
-  //   undefined,
-  //   { overwrite: true }
-  // );
-
   const models = dmmf.datamodel.models;
-  // const serviceStubContent = stubContent;
-  // const serviceNames: string[] = [];
+  const enums = dmmf.datamodel.enums;
+
+  for (const enumModel of enums) {
+    const outputFileName = `${enumModel.name.toLowerCase()}.enum`;
+    const outputFile = `${outputFileName}.ts`;
+
+    project.createSourceFile(
+      path.join(options.outputDirPath, outputFile),
+      prettier.format(createEnumTemplate({ enumModel }), {
+        parser: "typescript",
+      }),
+      { overwrite: true }
+    );
+  }
+
   for (const model of models) {
     console.log(`Processing Model ${model.name}`);
-    console.log(model);
 
     console.log(model.fields);
-    // let serviceContent = serviceStubContent;
 
-    // // now we replace some placeholders
-    // serviceContent = serviceContent.replace(/__Class__/g, model.name);
-    // serviceContent = serviceContent.replace(
-    //   /__class__/g,
-    //   model.name.toLowerCase()
-    // );
-
-    // write to output
     const outputFileName = `${model.name.toLowerCase()}.dto`;
     const outputFile = `${outputFileName}.ts`;
 
@@ -76,9 +65,5 @@ async function createServicesFromModels(
       prettier.format(createDtoTemplate({ model }), { parser: "typescript" }),
       { overwrite: true }
     );
-
-    // serviceNames.push(outputFileName);
   }
-
-  // generateServicesBarrelFile(serviceBarrelFile, serviceNames);
 }
