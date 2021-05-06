@@ -6,8 +6,8 @@
     "name": "Tim de Wolf",
     "url": "https://www.github.com/tpdewolf"
   },
-  "main": "src/index.js",
-  "typings": "src/index.d.ts",
+  "main": "dist/generator.js",
+  "typings": "dist/generator.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "echo 'No tests yet'",
@@ -18,11 +18,21 @@
     "prettier": "*",
     "prisma": "~2.22.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpdewolf/prisma-nestjs-dto-generator"
+  },
   "bin": {
     "prisma-nestjs-dto-generator": "dist/generator.js"
   },
   "engines": {
     "node": ">=12.4"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@prisma/generator-helper": "^2.22.0",
