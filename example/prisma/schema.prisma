@@ -3,7 +3,7 @@ generator client {
 }
 
 generator dto {
-  provider = "prisma-dto-generator"
+  provider = "prisma-nestjs-dto-generator"
   output   = "../../generated"
 }
 
