@@ -8,7 +8,21 @@ interface CreateDtoTemplateOptions {
 export function createDtoTemplate({ model }: CreateDtoTemplateOptions) {
   let template = "";
 
-  template += `class ${model.name}Dto {`;
+  const imports = model.fields
+    .map((field) => {
+      if (field.type !== "scalar") {
+        return field.type;
+      }
+
+      return "";
+    })
+    .filter(Boolean);
+
+  for (const importField of imports) {
+    template += `import { ${importField} } from './${importField.toLocaleLowerCase()}.dto.ts'`;
+  }
+
+  template += `export class ${model.name}Dto {`;
 
   for (const field of model.fields) {
     template += `${field.name}${field.isRequired ? "" : "?"}: ${

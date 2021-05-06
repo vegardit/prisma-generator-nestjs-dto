@@ -9,7 +9,7 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@tpdewolf/prisma-dto-generator": "0.0.1",
+    "@tpdewolf/prisma-nestjs-dto-generator": "0.0.1",
     "@types/node": "^14.14.37",
     "prisma": "~2.22.0",
     "ts-node": "^9.1.1",

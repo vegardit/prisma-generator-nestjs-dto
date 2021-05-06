@@ -17,7 +17,7 @@
     "prisma": "~2.22.0"
   },
   "bin": {
-    "prisma-nestjs-dto": "dist/generator.js"
+    "prisma-nestjs-dto-generator": "dist/generator.js"
   },
   "engines": {
     "node": ">=12.4"
