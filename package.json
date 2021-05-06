@@ -8,6 +8,13 @@
   },
   "main": "dist/generator.js",
   "typings": "dist/generator.d.ts",
+  "keywords": [
+    "prisma",
+    "generator",
+    "nestjs",
+    "dto",
+    "typescript"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "echo 'No tests yet'",
