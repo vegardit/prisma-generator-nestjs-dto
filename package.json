@@ -10,6 +10,7 @@
   "typings": "src/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "test": "echo 'No tests yet'",
     "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
