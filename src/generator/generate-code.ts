@@ -4,6 +4,7 @@ import * as path from "path";
 import { CompilerOptions, ModuleKind, Project, ScriptTarget } from "ts-morph";
 import { GenerateCodeOptions } from "./options";
 import { createDtoTemplate } from "./templates/dto.template";
+import prettier from "prettier";
 
 const baseCompilerOptions: CompilerOptions = {
   target: ScriptTarget.ES2019,
@@ -72,7 +73,7 @@ async function createServicesFromModels(
 
     project.createSourceFile(
       path.join(options.outputDirPath, outputFile),
-      createDtoTemplate({ model }),
+      prettier.format(createDtoTemplate({ model }), { parser: "typescript" }),
       { overwrite: true }
     );
 

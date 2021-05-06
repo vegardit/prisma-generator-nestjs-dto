@@ -737,12 +737,17 @@
         "affectsGlobalScope": false
       },
       "./src/generator/templates/dto.template.ts": {
-        "version": "d00b73cd1a317a21b5f37bf1d4ae63fe1c4189891572521eb101fe6b9a4f557f",
+        "version": "a038660dc5529949dc2716324ab7cb96afc67cfa4dfb9584d65f9518183955fd",
         "signature": "6da510ef8c956c21bc34313a297d31e78f4118a4f7cfae75df57e58e77eb1ca6",
         "affectsGlobalScope": false
       },
+      "./node_modules/@types/prettier/index.d.ts": {
+        "version": "08b428a44bc98005536a12456518797e9afe2a08e8b5d9785641713a54475881",
+        "signature": "08b428a44bc98005536a12456518797e9afe2a08e8b5d9785641713a54475881",
+        "affectsGlobalScope": false
+      },
       "./src/generator/generate-code.ts": {
-        "version": "262b771293705f3f8885a5c24faaae181061db7cb3e2d8e7d9c575d8c86e76c8",
+        "version": "dd4570157921bcea69848164bfdda719a8b10305770fd0086401eacbf081c87c",
         "signature": "f4d1c383bef597836246c1f989891514d5fe9cc3e7bbac4c83ca0d4928ec533a",
         "affectsGlobalScope": false
       },
@@ -1536,6 +1541,7 @@
         "./node_modules/@prisma/client/runtime/index.d.ts",
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/path.d.ts",
+        "./node_modules/@types/prettier/index.d.ts",
         "./node_modules/ts-morph/lib/ts-morph.d.ts",
         "./src/generator/options.ts",
         "./src/generator/templates/dto.template.ts"
@@ -2174,6 +2180,7 @@
       "./node_modules/@types/node/zlib.d.ts",
       "./node_modules/@types/normalize-package-data/index.d.ts",
       "./node_modules/@types/pluralize/index.d.ts",
+      "./node_modules/@types/prettier/index.d.ts",
       "./node_modules/@types/retry/index.d.ts",
       "./node_modules/@types/semver/classes/comparator.d.ts",
       "./node_modules/@types/semver/classes/range.d.ts",

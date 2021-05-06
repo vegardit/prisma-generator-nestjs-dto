@@ -10,7 +10,7 @@ export function createDtoTemplate({ model }: CreateDtoTemplateOptions) {
 
   const imports = model.fields
     .map((field) => {
-      if (field.type !== "scalar") {
+      if (field.kind !== "scalar") {
         return field.type;
       }
 
@@ -18,9 +18,11 @@ export function createDtoTemplate({ model }: CreateDtoTemplateOptions) {
     })
     .filter(Boolean);
 
-  for (const importField of imports) {
-    template += `import { ${importField} } from './${importField.toLocaleLowerCase()}.dto.ts'`;
+  for (const importField of new Set(imports)) {
+    template += `import { ${importField}Dto } from './${importField.toLocaleLowerCase()}.dto';`;
   }
+
+  template += "\n\n";
 
   template += `export class ${model.name}Dto {`;
 
@@ -28,7 +30,7 @@ export function createDtoTemplate({ model }: CreateDtoTemplateOptions) {
     template += `${field.name}${field.isRequired ? "" : "?"}: ${
       field.kind === "scalar"
         ? mapScalarToTSType(field.type, false)
-        : field.type
+        : `${field.type}Dto`
     }${field.isList ? "[]" : ""};`;
   }
 
