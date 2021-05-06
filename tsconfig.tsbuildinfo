@@ -717,8 +717,8 @@
         "affectsGlobalScope": false
       },
       "./src/generator/options.ts": {
-        "version": "c417dfb11ff72eae41347b26a941fe55ac44188bd826c78350bb5dc77862ada5",
-        "signature": "d88ea1cfb2eb96366d053aed2812467390989e5c61ff257579ce843a3641b57a",
+        "version": "5b988910dd173c51e1942fd8d71cfbe968a6613a80ad7b8af2662e75986f46cb",
+        "signature": "8907a55d199356f465b350caff29d59b6495922cdb3d6990ef35a6c939a77d81",
         "affectsGlobalScope": false
       },
       "./node_modules/@ts-morph/common/lib/typescript.d.ts": {
@@ -737,8 +737,8 @@
         "affectsGlobalScope": false
       },
       "./src/generator/templates/dto.template.ts": {
-        "version": "93903da568c53e04566898a4f304328967031fc860432e05546f2102151a6dd2",
-        "signature": "6da510ef8c956c21bc34313a297d31e78f4118a4f7cfae75df57e58e77eb1ca6",
+        "version": "763d9fd9613a8a11869972569c02dfdb3d08f1045a5d778d765693658a7cde77",
+        "signature": "5d9d0b2e3fb97cd93173fbb17b75d3b86dc39cca0d709d492da7ca6d22baed39",
         "affectsGlobalScope": false
       },
       "./node_modules/@types/prettier/index.d.ts": {
@@ -747,22 +747,27 @@
         "affectsGlobalScope": false
       },
       "./src/generator/templates/enum.template.ts": {
-        "version": "9e3898485d36e4e0fdf76ff637c6f8947e5f639ad2f00b2900d5e56f9cea7d28",
-        "signature": "95e95aa29cf47e7c075524769fa5a3f6ffe1b65e8aa1d8081f8b082262144836",
+        "version": "68b5310cd7a63023b80bae6d7b1f89327ccd3e087a87908f934acd62e4f86227",
+        "signature": "59fdec70922b0811c337a64a3cb867d82c19fcbf072ac80cd7df3bfcf9288864",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/case/case.d.ts": {
+        "version": "a81d73fb2837f88ab4671882a5d3fe3113da6a5883c2261fdfb0b87905bba67f",
+        "signature": "a81d73fb2837f88ab4671882a5d3fe3113da6a5883c2261fdfb0b87905bba67f",
         "affectsGlobalScope": false
       },
       "./src/generator/generate-code.ts": {
-        "version": "0aa64df875388b53ccc2d5adb7347795073a7f38dfa2463cb187578c6d6c2cfb",
+        "version": "7f497136bf067a3aec0f14bd4449170aaa38c1875f6eece624c50463f5481993",
         "signature": "f4d1c383bef597836246c1f989891514d5fe9cc3e7bbac4c83ca0d4928ec533a",
         "affectsGlobalScope": false
       },
       "./src/cli/prisma-generator.ts": {
-        "version": "3e11b69a8dc8333cad5a446a7b1bdd770abdeca2c48f9d35911f42652cab7705",
+        "version": "c485e6920649f22ee1754ad4437d087098e017e163559bf5183978cd7e309c44",
         "signature": "7812fca8068ae96d10a73410f641f3b9a79b0d60e209391c0365105062040ff5",
         "affectsGlobalScope": false
       },
       "./src/cli/generator.ts": {
-        "version": "e56f8194d0877896b1ecc3f333d3b26864a3505e70d5908bb55cf406d7113daa",
+        "version": "fa0c55a5896a1c65deab77430edba143407fd684385ff49fef785b5c10acdd62",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },
@@ -977,7 +982,7 @@
         "affectsGlobalScope": false
       },
       "./src/utils/prisma-version.ts": {
-        "version": "266129fd8f71707348cd7ad62a3eb160f1ca519f3e805b9045c5d76faef96319",
+        "version": "19a11090ccc6095bfdeb9c8a682d5a9856021f97eddf279c954019e0fd3ed852",
         "signature": "999f9b1000267ec1951cb67ee1405a2ae635153b91f8de191db5c172e6b8d7b8",
         "affectsGlobalScope": false
       },
@@ -1546,6 +1551,7 @@
         "./node_modules/@prisma/client/runtime/index.d.ts",
         "./node_modules/@types/node/path.d.ts",
         "./node_modules/@types/prettier/index.d.ts",
+        "./node_modules/case/case.d.ts",
         "./node_modules/ts-morph/lib/ts-morph.d.ts",
         "./src/generator/options.ts",
         "./src/generator/templates/dto.template.ts",
@@ -2234,6 +2240,7 @@
       "./node_modules/@types/semver/ranges/to-comparators.d.ts",
       "./node_modules/@types/semver/ranges/valid.d.ts",
       "./node_modules/arg/index.d.ts",
+      "./node_modules/case/case.d.ts",
       "./node_modules/dotenv/types/index.d.ts",
       "./node_modules/execa/index.d.ts",
       "./node_modules/ts-morph/lib/ts-morph.d.ts",

@@ -5,6 +5,7 @@ import { GenerateCodeOptions } from "./options";
 import { createDtoTemplate } from "./templates/dto.template";
 import prettier from "prettier";
 import { createEnumTemplate } from "./templates/enum.template";
+import Case from "case";
 
 const baseCompilerOptions: CompilerOptions = {
   target: ScriptTarget.ES2019,
@@ -31,6 +32,17 @@ export const generateCode = async (
   await project.save();
 };
 
+function getCaseFn(filenameCase: GenerateCodeOptions["filenameCase"]) {
+  switch (filenameCase) {
+    case "snake":
+      return Case.snake;
+    case "kebab":
+      return Case.kebab;
+    default:
+      return Case.camel;
+  }
+}
+
 async function createServicesFromModels(
   project: Project,
   dmmf: PrismaDMMF.Document,
@@ -39,13 +51,18 @@ async function createServicesFromModels(
   const models = dmmf.datamodel.models;
   const enums = dmmf.datamodel.enums;
 
+  const caseFn = getCaseFn(options.filenameCase);
+
+  const dtoSuffix = options.dtoSuffix || "Dto";
+  const classPrefix = options.classPrefix || "";
+
   for (const enumModel of enums) {
-    const outputFileName = `${enumModel.name.toLowerCase()}.enum`;
+    const outputFileName = `${caseFn(enumModel.name)}.enum`;
     const outputFile = `${outputFileName}.ts`;
 
     project.createSourceFile(
       path.join(options.outputDirPath, outputFile),
-      prettier.format(createEnumTemplate({ enumModel }), {
+      prettier.format(createEnumTemplate({ enumModel, classPrefix }), {
         parser: "typescript",
       }),
       { overwrite: true }
@@ -55,14 +72,17 @@ async function createServicesFromModels(
   for (const model of models) {
     console.log(`Processing Model ${model.name}`);
 
-    console.log(model.fields);
-
-    const outputFileName = `${model.name.toLowerCase()}.dto`;
+    const outputFileName = `${caseFn(model.name)}.dto`;
     const outputFile = `${outputFileName}.ts`;
 
     project.createSourceFile(
       path.join(options.outputDirPath, outputFile),
-      prettier.format(createDtoTemplate({ model }), { parser: "typescript" }),
+      prettier.format(
+        createDtoTemplate({ model, dtoSuffix, classPrefix, caseFn }),
+        {
+          parser: "typescript",
+        }
+      ),
       { overwrite: true }
     );
   }

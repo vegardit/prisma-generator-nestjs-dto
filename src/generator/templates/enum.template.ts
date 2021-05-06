@@ -2,12 +2,16 @@ import { DMMF as PrismaDMMF } from "@prisma/client/runtime";
 
 interface CreateEnumTemplateOptions {
   enumModel: PrismaDMMF.DatamodelEnum;
+  classPrefix: string;
 }
 
-export function createEnumTemplate({ enumModel }: CreateEnumTemplateOptions) {
+export function createEnumTemplate({
+  enumModel,
+  classPrefix,
+}: CreateEnumTemplateOptions) {
   let template = "";
 
-  template += `export enum ${enumModel.name} {\n`;
+  template += `export enum ${classPrefix}${enumModel.name} {\n`;
 
   for (const enumValue of enumModel.values) {
     template += `${enumValue.name}${

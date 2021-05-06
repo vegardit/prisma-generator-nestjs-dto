@@ -15,6 +15,7 @@ function parseStringBoolean(stringBoolean: string | undefined) {
 
 export async function generate(options: GeneratorOptions) {
   const outputDir = parseEnvValue(options.generator.output!);
+
   await asyncFs.mkdir(outputDir, { recursive: true });
   await removeDir(outputDir, true);
 
@@ -26,6 +27,7 @@ export async function generate(options: GeneratorOptions) {
     .dmmf as PrismaDMMF.Document;
 
   const generatorConfig = options.generator.config;
+
   const config: GenerateCodeOptions = {
     outputDirPath: outputDir,
     relativePrismaOutputPath: toUnixPath(
@@ -34,6 +36,7 @@ export async function generate(options: GeneratorOptions) {
     absolutePrismaOutputPath: prismaClientPath.includes("node_modules")
       ? "@prisma/client"
       : undefined,
+    ...generatorConfig,
   };
 
   // TODO: replace with `options.dmmf` when the spec match prisma client output

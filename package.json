@@ -37,6 +37,7 @@
   "dependencies": {
     "@prisma/generator-helper": "^2.22.0",
     "@prisma/sdk": "~2.22.0",
+    "case": "^1.6.3",
     "pluralize": "^8.0.0",
     "semver": "^7.3.5",
     "ts-morph": "^10.0.2",

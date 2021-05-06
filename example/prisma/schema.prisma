@@ -3,8 +3,11 @@ generator client {
 }
 
 generator dto {
-  provider = "prisma-nestjs-dto-generator"
-  output   = "../../generated"
+  provider     = "prisma-nestjs-dto-generator"
+  output       = "../../generated"
+  filenameCase = "snakeCase"
+  dtoSuffix    = "Dto"
+  classPrefix  = "Generated"
 }
 
 datasource db {
@@ -13,14 +16,11 @@ datasource db {
 }
 
 model User {
-  id     String  @id @default(cuid())
-  email  String  @unique
-  name   String?
-  posts  Post[]
-  role   Role
-  /// @TypeGraphQL.field(name: "emailAddress")
-  /// more
-  secret String
+  id    String  @id @default(cuid())
+  email String  @unique
+  name  String?
+  posts Post[]
+  role  Role
 }
 
 enum Role {
