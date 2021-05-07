@@ -737,7 +737,7 @@
         "affectsGlobalScope": false
       },
       "./src/generator/templates/dto.template.ts": {
-        "version": "763d9fd9613a8a11869972569c02dfdb3d08f1045a5d778d765693658a7cde77",
+        "version": "2a2dac8556aa3542f9d03822e9450332acd2112f838e6466cfab278ad52a21c1",
         "signature": "5d9d0b2e3fb97cd93173fbb17b75d3b86dc39cca0d709d492da7ca6d22baed39",
         "affectsGlobalScope": false
       },

@@ -16,6 +16,14 @@ export function createDtoTemplate({
 }: CreateDtoTemplateOptions) {
   let template = "";
 
+  const shouldImportPrisma = model.fields
+    .filter((field) => field.kind === "scalar")
+    .some((field) => mapScalarToTSType(field.type, false).includes("Prisma"));
+
+  if (shouldImportPrisma) {
+    template += "import { Prisma } from '@prisma/client';\n";
+  }
+
   const dtos = model.fields
     .map((field) => (field.kind === "object" ? field.type : ""))
     .filter(Boolean);
