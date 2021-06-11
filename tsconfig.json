@@ -5,7 +5,6 @@
       "target": "es2018",
       "strict": true,
       "esModuleInterop": true,
-      "sourceMap": true,
       "noImplicitAny": false,
       "outDir": "dist",
       "rootDir": "src",
