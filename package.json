@@ -30,7 +30,7 @@
     "url": "https://github.com/tpdewolf/prisma-nestjs-dto-generator"
   },
   "bin": {
-    "prisma-nestjs-dto-generator": "dist/generator.js"
+    "prisma-nestjs-dto-generator": "dist/cli/dev.js"
   },
   "engines": {
     "node": ">=12.4"
