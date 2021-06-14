@@ -1,15 +1,13 @@
 {
-    "compilerOptions": {
-      "lib": ["esnext"],
-      "module": "commonjs",
-      "target": "es2020",
-      "strict": true,
-      "esModuleInterop": true,
-      "noImplicitAny": false,
-      "outDir": "dist",
-      "rootDir": "src",
-      "declaration": true
-    },
-    "exclude": ["generated", "dist"]
-  }
-  
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "module": "commonjs",
+    "target": "es2020",
+    "strict": true,
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "exclude": ["example", "generated", "dist"]
+}
