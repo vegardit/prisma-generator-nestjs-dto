@@ -8,8 +8,7 @@
       "noImplicitAny": false,
       "outDir": "dist",
       "rootDir": "src",
-      "declaration": true,
-      "incremental": true
+      "declaration": true
     },
     "exclude": ["generated", "dist"]
   }

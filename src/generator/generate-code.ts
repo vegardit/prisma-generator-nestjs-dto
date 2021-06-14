@@ -1,35 +1,22 @@
-import { DMMF as PrismaDMMF } from "@prisma/client/runtime";
 import * as path from "path";
-import { CompilerOptions, ModuleKind, Project, ScriptTarget } from "ts-morph";
-import { GenerateCodeOptions } from "./options";
-import { createDtoTemplate } from "./templates/dto.template";
+import fs from "fs/promises";
 import prettier from "prettier";
-import { createEnumTemplate } from "./templates/enum.template";
 import Case from "case";
+import { createDtoTemplate } from "./templates/dto.template";
+import { createEnumTemplate } from "./templates/enum.template";
 
-const baseCompilerOptions: CompilerOptions = {
-  target: ScriptTarget.ES2019,
-  module: ModuleKind.CommonJS,
-  emitDecoratorMetadata: true,
-  experimentalDecorators: true,
-  esModuleInterop: true,
-};
+import type { DMMF } from "@prisma/generator-helper";
+import type { GenerateCodeOptions } from "./options";
 
-export const generateCode = async (
-  dmmf: PrismaDMMF.Document,
+export const generateCode = (
+  dmmf: DMMF.Document,
   options: GenerateCodeOptions
 ) => {
-  const project = new Project({
-    compilerOptions: {
-      ...baseCompilerOptions,
-      ...{ declaration: true },
-    },
-  });
+  const results = createServicesFromModels(dmmf, options);
 
-  // we process the services
-  await createServicesFromModels(project, dmmf, options);
-
-  await project.save();
+  return Promise.all(
+    results.map(({ fileName, content }) => fs.writeFile(fileName, content))
+  );
 };
 
 function getCaseFn(filenameCase: GenerateCodeOptions["filenameCase"]) {
@@ -43,47 +30,41 @@ function getCaseFn(filenameCase: GenerateCodeOptions["filenameCase"]) {
   }
 }
 
-async function createServicesFromModels(
-  project: Project,
-  dmmf: PrismaDMMF.Document,
+function createServicesFromModels(
+  dmmf: DMMF.Document,
   options: GenerateCodeOptions
 ) {
   const models = dmmf.datamodel.models;
   const enums = dmmf.datamodel.enums;
+  const { output, dtoSuffix = "Dto", classPrefix = "" } = options;
 
   const caseFn = getCaseFn(options.filenameCase);
 
-  const dtoSuffix = options.dtoSuffix || "Dto";
-  const classPrefix = options.classPrefix || "";
-
-  for (const enumModel of enums) {
-    const outputFileName = `${caseFn(enumModel.name)}.enum`;
-    const outputFile = `${outputFileName}.ts`;
-
-    project.createSourceFile(
-      path.join(options.outputDirPath, outputFile),
-      prettier.format(createEnumTemplate({ enumModel, classPrefix }), {
+  const enumsFiles = enums.map((enumModel) => {
+    const fileName = path.join(output, `${caseFn(enumModel.name)}.enum.ts`);
+    const content = prettier.format(
+      createEnumTemplate({ enumModel, classPrefix }),
+      {
         parser: "typescript",
-      }),
-      { overwrite: true }
+      }
     );
-  }
 
-  for (const model of models) {
+    return { fileName, content };
+  });
+
+  const modelFiles = models.map((model) => {
     console.log(`Processing Model ${model.name}`);
+    // model.fields.forEach(field => console.log(model.name, field))
+    const fileName = path.join(output, `${caseFn(model.name)}.dto.ts`);
 
-    const outputFileName = `${caseFn(model.name)}.dto`;
-    const outputFile = `${outputFileName}.ts`;
-
-    project.createSourceFile(
-      path.join(options.outputDirPath, outputFile),
-      prettier.format(
-        createDtoTemplate({ model, dtoSuffix, classPrefix, caseFn }),
-        {
-          parser: "typescript",
-        }
-      ),
-      { overwrite: true }
+    const content = prettier.format(
+      createDtoTemplate({ model, dtoSuffix, classPrefix, caseFn }),
+      {
+        parser: "typescript",
+      }
     );
-  }
+    return { fileName, content };
+  });
+
+  return [...modelFiles, ...enumsFiles];
 }

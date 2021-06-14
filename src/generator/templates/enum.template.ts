@@ -1,24 +1,23 @@
-import { DMMF as PrismaDMMF } from "@prisma/client/runtime";
+import type { DMMF } from "@prisma/generator-helper";
 
 interface CreateEnumTemplateOptions {
-  enumModel: PrismaDMMF.DatamodelEnum;
+  enumModel: DMMF.DatamodelEnum;
   classPrefix: string;
+  enumSuffix?: string;
 }
 
 export function createEnumTemplate({
   enumModel,
   classPrefix,
+  enumSuffix = "",
 }: CreateEnumTemplateOptions) {
-  let template = "";
-
-  template += `export enum ${classPrefix}${enumModel.name} {\n`;
-
-  for (const enumValue of enumModel.values) {
-    template += `${enumValue.name}${
-      enumValue.dbName ? `= '${enumValue.dbName}'` : ""
-    },\n`;
-  }
-  template += "}";
+  const template = `
+  export enum ${classPrefix}${enumModel.name}${enumSuffix} {
+    ${enumModel.values.map(
+      (value) => `${value.name}${value.dbName ? `= '${value.dbName}'` : ""},`
+    )}
+  };
+  `;
 
   return template;
 }

@@ -3,8 +3,8 @@ import { generate } from "./prisma-generator";
 
 generatorHandler({
   onManifest: () => ({
-    defaultOutput: "node_modules/@generated/type-graphql",
-    prettyName: "Custom integration",
+    defaultOutput: "../src/generated/nestjs-dto",
+    prettyName: "NestJS DTO Generator",
     requiresGenerators: ["prisma-client-js"],
   }),
   onGenerate: generate,

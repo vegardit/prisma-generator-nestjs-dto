@@ -5,12 +5,12 @@ This generator generates Dto files based on your Prisma schema
 ## To install
 
 ```bash
-npm i @tpdewolf/prisma-nestjs-dto-generator
+npm install --save-dev @tpdewolf/prisma-nestjs-dto-generator
 ```
 
 ## Add the generator to your schema
 
-```
+```prisma
 generator dto {
   provider     = "prisma-nestjs-dto-generator"
   output       = "../generated" /// relative output path
