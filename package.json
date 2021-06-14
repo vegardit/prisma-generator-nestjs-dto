@@ -22,7 +22,6 @@
   },
   "peerDependencies": {
     "@prisma/client": "~2.22.0",
-    "prettier": "*",
     "prisma": "~2.22.0"
   },
   "repository": {
@@ -43,19 +42,12 @@
   },
   "dependencies": {
     "@prisma/generator-helper": "^2.24.1",
-    "case": "^1.6.3",
-    "pluralize": "^8.0.0",
-    "semver": "^7.3.5",
-    "ts-morph": "^11.0.0",
-    "tslib": "^2.2.0"
+    "case": "^1.6.3"
   },
   "devDependencies": {
     "@prisma/client": "^2.24.1",
     "@prisma/sdk": "^2.24.1",
     "@types/node": "^15.12.2",
-    "@types/pluralize": "0.0.29",
-    "@types/prettier": "^2.2.3",
-    "@types/semver": "^7.3.6",
     "prettier": "^2.3.1",
     "prisma": "^2.24.1",
     "ts-node": "^10.0.0",

@@ -1,6 +1,5 @@
 import * as path from "path";
 import fs from "fs/promises";
-import prettier from "prettier";
 import Case from "case";
 import { createDtoTemplate } from "./templates/dto.template";
 import { createEnumTemplate } from "./templates/enum.template";
@@ -42,27 +41,23 @@ function createServicesFromModels(
 
   const enumsFiles = enums.map((enumModel) => {
     const fileName = path.join(output, `${caseFn(enumModel.name)}.enum.ts`);
-    const content = prettier.format(
-      createEnumTemplate({ enumModel, classPrefix }),
-      {
-        parser: "typescript",
-      }
-    );
+    const content = createEnumTemplate({ enumModel, classPrefix });
 
     return { fileName, content };
   });
 
   const modelFiles = models.map((model) => {
     console.log(`Processing Model ${model.name}`);
-    // model.fields.forEach(field => console.log(model.name, field))
     const fileName = path.join(output, `${caseFn(model.name)}.dto.ts`);
 
-    const content = prettier.format(
-      createDtoTemplate({ model, dtoSuffix, classPrefix, caseFn }),
-      {
-        parser: "typescript",
-      }
-    );
+    const content = createDtoTemplate({
+      model,
+      dtoSuffix,
+      classPrefix,
+      caseFn,
+    });
+    // model.fields.forEach(field => console.log(model.name, fileName, field, content))
+
     return { fileName, content };
   });
 
