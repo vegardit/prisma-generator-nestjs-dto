@@ -1,36 +1,107 @@
+import { filterFields } from '../helpers';
+import { scalarToTS } from '../template-helpers';
+
 import type { DMMF } from '@prisma/generator-helper';
+import type { TemplateHelpers } from '../template-helpers';
 import { inspect } from 'util';
-import { filterModelFieldsForClass } from '../helpers';
-import { scalarToTS, makeHelpers, echo } from '../template-helpers';
 
-interface CreateDtoTemplateParam {
+interface MakeCreateDtoParam {
   model: DMMF.Model;
-  includeRelationFields: boolean;
-  includeRelationFromFields: boolean;
-  transformCase?: (input: string) => string;
-  dtoPrefix: string;
-  enumPrefix: string;
-  dtoSuffix: string;
-  enumSuffix: string;
+  templateHelpers: TemplateHelpers;
 }
-
-export function createDtoTemplate({
+export const makeCreateDto = ({
   model,
-  includeRelationFields,
-  includeRelationFromFields,
-  transformCase = echo,
-  ...preAndSuffixes
-}: CreateDtoTemplateParam) {
-  const t = makeHelpers({
-    transformCase,
-    ...preAndSuffixes,
+  templateHelpers: t,
+}: MakeCreateDtoParam) => {
+  const enumsToImport = Array.from(
+    new Set(
+      model.fields
+        .filter(({ kind }) => kind === 'enum')
+        .map(({ type }) => type),
+    ),
+  );
+
+  const fieldsToInclude = filterFields({
+    fields: model.fields,
+    keepReadOnly: false,
+    keepRelations: false,
+    keepRelationFromFields: false,
+    keepId: false,
+    keepUpdatedAt: false,
   });
 
+  const template = `
+import { Prisma } from '@prisma/client';
+${t.importEnums(enumsToImport)}
+
+export class ${t.createDtoName(model.name)} implements Prisma.${
+    model.name
+  }CreateInput {
+  ${t.fieldsToDtoProps(fieldsToInclude, true)}
+}
+
+const fields = [${model.fields.map((field) => inspect(field))}];
+`;
+
+  return template;
+};
+
+interface MakeUpdateDtoParam {
+  model: DMMF.Model;
+  templateHelpers: TemplateHelpers;
+}
+export const makeUpdateDto = ({
+  model,
+  templateHelpers: t,
+}: MakeUpdateDtoParam) => {
+  const enumsToImport = Array.from(
+    new Set(
+      model.fields
+        .filter(({ kind }) => kind === 'enum')
+        .map(({ type }) => type),
+    ),
+  );
+
+  const fieldsToInclude = filterFields({
+    fields: model.fields,
+    keepReadOnly: false,
+    keepRelations: false,
+    keepRelationFromFields: false,
+    keepId: false,
+    keepUpdatedAt: false,
+  });
+
+  const template = `
+import { Prisma } from '@prisma/client';
+${t.importEnums(enumsToImport)}
+
+export class ${t.updateDtoName(model.name)} implements Prisma.${
+    model.name
+  }UpdateInput {
+  ${t.fieldsToDtoProps(fieldsToInclude, true, true)}
+}
+`;
+
+  return template;
+};
+
+interface MakeEntityParam {
+  model: DMMF.Model;
+  templateHelpers: TemplateHelpers;
+  includeRelations: boolean;
+  includeRelationFromFields: boolean;
+}
+export const makeEntity = ({
+  model,
+  includeRelations,
+  includeRelationFromFields,
+  templateHelpers: t,
+}: MakeEntityParam) => {
   const importPrisma = model.fields
     .filter(({ kind }) => kind === 'scalar')
     .some(({ type }) => scalarToTS(type).includes('Prisma'));
 
-  const dtosToImport = includeRelationFields
+  const entitiesToImport = includeRelations
     ? Array.from(
         new Set(
           model.fields
@@ -50,29 +121,32 @@ export function createDtoTemplate({
     ),
   );
 
-  const fieldsToInclude = filterModelFieldsForClass({
+  const fieldsToInclude = filterFields({
     fields: model.fields,
-    includeRelationFields,
-    includeRelationFromFields,
+    keepReadOnly: true,
+    keepId: true,
+    keepUpdatedAt: true,
+    keepRelations: includeRelations,
+    keepRelationFromFields: includeRelationFromFields,
   });
 
   const template = `
-${t.if(importPrisma, "import { Prisma } from '@prisma/client';")}
-${t.if(
-  includeRelationFields,
-  "import { ApiExtraModels } from '@nestjs/swagger';",
-)}
+import { ${t.if(importPrisma, 'Prisma,')} ${model.name} as ${
+    model.name
+  }Type } from '@prisma/client';
+${t.if(includeRelations, "import { ApiExtraModels } from '@nestjs/swagger';")}
 
-${t.importDtos(dtosToImport)}
+${t.importEntities(entitiesToImport)}
 ${t.importEnums(enumsToImport)}
 
-${t.if(includeRelationFields, t.apiExtraModels(dtosToImport))}
-export class ${t.dtoName(model.name)} {
-  ${t.fieldsToClassProps(fieldsToInclude)}
+${t.if(
+  includeRelations && entitiesToImport.length,
+  t.apiExtraModels(entitiesToImport),
+)}
+export class ${t.entityName(model.name)} implements ${model.name}Type{
+  ${t.fieldsToEntityProps(fieldsToInclude)}
 }
-
-const fields = [${model.fields.map((field) => inspect(field))}];
 `;
 
   return template;
-}
+};

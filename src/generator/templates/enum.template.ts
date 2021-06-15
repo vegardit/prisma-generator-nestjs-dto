@@ -1,26 +1,19 @@
 import type { DMMF } from '@prisma/generator-helper';
-import { makeHelpers } from '../template-helpers';
+import type { TemplateHelpers } from '../template-helpers';
 
 interface CreateEnumTemplateOptions {
   enumModel: DMMF.DatamodelEnum;
-  dtoPrefix: string;
-  enumPrefix: string;
-  dtoSuffix: string;
-  enumSuffix: string;
+  templateHelpers: TemplateHelpers;
 }
 
 export function createEnumTemplate({
   enumModel,
-  ...preAndSuffixes
+  templateHelpers: t,
 }: CreateEnumTemplateOptions) {
-  const th = makeHelpers({
-    ...preAndSuffixes,
-  });
-
   const template = `
-export enum ${th.enumName(enumModel.name)} {
+export enum ${t.enumName(enumModel.name)} {
   ${enumModel.values.map(
-    (value) => `${value.name}${th.if(value.dbName, `= '${value.dbName}'`)}`,
+    (value) => `${value.name}${t.if(value.dbName, `= '${value.dbName}'`)}`,
   )}
 };
 `;

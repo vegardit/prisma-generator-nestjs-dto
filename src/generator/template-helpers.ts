@@ -53,20 +53,30 @@ export const importStatement = (names: string[], from: string) =>
   `import { ${names} } from '${from}';\n`;
 
 interface MakeHelpersParam {
-  dtoPrefix: string;
-  enumPrefix: string;
+  createDtoPrefix: string;
+  updateDtoPrefix: string;
   dtoSuffix: string;
+  enumPrefix: string;
   enumSuffix: string;
+  entityPrefix: string;
+  entitySuffix: string;
   transformCase?: (item: string) => string;
 }
 export const makeHelpers = ({
-  dtoPrefix,
-  enumPrefix,
+  createDtoPrefix,
+  updateDtoPrefix,
   dtoSuffix,
+  enumPrefix,
   enumSuffix,
+  entityPrefix,
+  entitySuffix,
   transformCase = echo,
 }: MakeHelpersParam) => {
-  const dtoName = (name: string) => `${dtoPrefix}${name}${dtoSuffix}`;
+  const entityName = (name: string) => `${entityPrefix}${name}${entitySuffix}`;
+  const createDtoName = (name: string) =>
+    `${createDtoPrefix}${name}${dtoSuffix}`;
+  const updateDtoName = (name: string) =>
+    `${updateDtoPrefix}${name}${dtoSuffix}`;
   const enumName = (name: string) => `${enumPrefix}${name}${enumSuffix}`;
 
   const importEnum = (name: string) =>
@@ -74,10 +84,10 @@ export const makeHelpers = ({
   const importEnums = (names: string[]) =>
     each(names, (name) => importEnum(name));
 
-  const importDto = (name: string) =>
-    importStatement([name].map(dtoName), `./${transformCase(name)}.dto`);
-  const importDtos = (names: string[]) =>
-    each(names, (name) => importDto(name));
+  const importEntity = (name: string) =>
+    importStatement([name].map(entityName), `./${transformCase(name)}.entity`);
+  const importEntities = (names: string[]) =>
+    each(names, (name) => importEntity(name));
 
   const fieldType = (field: DMMF.Field, toInputType = false) =>
     `${
@@ -85,34 +95,58 @@ export const makeHelpers = ({
         ? scalarToTS(field.type, toInputType)
         : field.kind === 'enum'
         ? enumName(field.type)
-        : dtoName(field.type)
+        : entityName(field.type)
     }${when(field.isList, '[]')}`;
 
-  const fieldToClassProp = (field: DMMF.Field, useInputTypes = false) =>
-    `${field.name}${unless(field.isRequired, '?')}: ${fieldType(
-      field,
-      useInputTypes,
+  const fieldToDtoProp = (
+    field: DMMF.Field,
+    useInputTypes = false,
+    forceOptional = false,
+  ) =>
+    `${field.name}${unless(
+      field.isRequired && !forceOptional,
+      '?',
+    )}: ${fieldType(field, useInputTypes)};`;
+
+  const fieldsToDtoProps = (
+    fields: DMMF.Field[],
+    useInputTypes = false,
+    forceOptional = false,
+  ) =>
+    `${each(
+      fields,
+      (field) => fieldToDtoProp(field, useInputTypes, forceOptional),
+      '\n',
+    )}`;
+
+  const fieldToEntityProp = (field: DMMF.Field) =>
+    `${field.name}: ${fieldType(field)} ${unless(
+      field.isRequired,
+      ' | null',
     )};`;
 
-  const fieldsToClassProps = (fields: DMMF.Field[], useInputTypes = false) =>
-    `${each(fields, (field) => fieldToClassProp(field, useInputTypes), '\n')}`;
+  const fieldsToEntityProps = (fields: DMMF.Field[]) =>
+    `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
 
   const apiExtraModels = (modelNames: string[]) =>
-    `@ApiExtraModels(${modelNames.map(dtoName)})`;
+    `@ApiExtraModels(${modelNames.map(entityName)})`;
 
   return {
     apiExtraModels,
-    dtoName,
+    entityName,
+    createDtoName,
+    updateDtoName,
     each,
     echo,
     enumName,
-    fieldsToClassProps,
-    fieldToClassProp,
+    fieldsToDtoProps,
+    fieldToDtoProp,
+    fieldToEntityProp,
+    fieldsToEntityProps,
     fieldType,
     for: each,
     if: when,
-    importDto,
-    importDtos,
+    importEntities,
     importEnum,
     importEnums,
     importStatement,
@@ -120,3 +154,5 @@ export const makeHelpers = ({
     when,
   };
 };
+
+export type TemplateHelpers = ReturnType<typeof makeHelpers>;

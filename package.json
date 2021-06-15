@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "license": "Apache-2.0",
   "author": {
-    "name" : "Benjamin Kroeger",
-    "email" : "bk@vegardit.com",
-    "url" : "https://vegardit.com/"
+    "name": "Benjamin Kroeger",
+    "email": "bk@vegardit.com",
+    "url": "https://vegardit.com/"
   },
   "main": "dist/index.js",
   "keywords": [
@@ -16,7 +16,6 @@
     "typescript"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix"
@@ -50,6 +49,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "prettier": "^2.3.1",
+    "rimraf": "^3.0.2",
     "typescript": "^4.3.2"
   }
 }
