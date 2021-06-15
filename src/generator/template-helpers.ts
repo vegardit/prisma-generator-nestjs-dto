@@ -17,14 +17,14 @@ const PrismaScalarToTypeScript = {
 };
 
 const knownPrismaScalarTypes = Object.keys(PrismaScalarToTypeScript);
-export const scalarToTS = (scalar: string, toInputType: boolean = false) => {
+export const scalarToTS = (scalar: string, useInputTypes: boolean = false) => {
   if (!knownPrismaScalarTypes.includes(scalar)) {
     throw new Error(`Unrecognized scalar type: ${scalar}`);
   }
 
   // [Working with JSON fields](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields)
   // supports different types for input / output. `Prisma.InputJsonValue` extends `Prisma.JsonValue` with `undefined`
-  if ( toInputType && scalar === 'Json') {
+  if (useInputTypes && scalar === "Json") {
     return "Prisma.InputJsonValue";
   }
 
@@ -52,45 +52,42 @@ export const each = <T = any>(
 ) => arr.map(fn).join(joinWith);
 
 export const importStatement = (names: string[], from: string) =>
-  `import { ${names} } from '${from}';`;
+  `import { ${names} } from '${from}';\n`;
 
 interface MakeHelpersParam {
-  dtoPrefix?: string;
-  enumPrefix?: string;
-  dtoSuffix?: string;
-  enumSuffix?: string;
-  transformCase: (item: string) => string;
+  dtoPrefix: string;
+  enumPrefix: string;
+  dtoSuffix: string;
+  enumSuffix: string;
+  transformCase?: (item: string) => string;
 }
 export const makeHelpers = ({
-  dtoPrefix = "",
-  enumPrefix = "",
-  dtoSuffix = "",
-  enumSuffix = "",
+  dtoPrefix,
+  enumPrefix,
+  dtoSuffix,
+  enumSuffix,
   transformCase = echo,
 }: MakeHelpersParam) => {
+  const dtoName = (name: string) => `${dtoPrefix}${name}${dtoSuffix}`;
+  const enumName = (name: string) => `${enumPrefix}${name}${enumSuffix}`;
+
   const importEnum = (name: string) =>
-    importStatement(
-      [name].map((value) => `${enumPrefix}${value}${enumSuffix}`),
-      `./${transformCase(name)}.enum`
-    );
+    importStatement([name].map(enumName), `./${transformCase(name)}.enum`);
   const importEnums = (names: string[]) =>
-    each(names, (name) => importEnum(name), ';\n');
+    each(names, (name) => importEnum(name));
 
   const importDto = (name: string) =>
-    importStatement(
-      [name].map((value) => `${dtoPrefix}${value}${dtoSuffix}`),
-      `./${transformCase(name)}.dto`
-    );
+    importStatement([name].map(dtoName), `./${transformCase(name)}.dto`);
   const importDtos = (names: string[]) =>
-    each(names, (name) => importDto(name), ';\n');
+    each(names, (name) => importDto(name));
 
   const fieldType = (field: DMMF.Field, toInputType: boolean = false) =>
     `${
       field.kind === "scalar"
         ? scalarToTS(field.type, toInputType)
         : field.kind === "enum"
-        ? `${enumPrefix}${field.type}`
-        : `${dtoPrefix}${field.type}${dtoSuffix}`
+        ? enumName(field.type)
+        : dtoName(field.type)
     }${when(field.isList, "[]")}`;
 
   const fieldToClassProp = (
@@ -108,18 +105,26 @@ export const makeHelpers = ({
   ) =>
     `${each(fields, (field) => fieldToClassProp(field, useInputTypes), "\n")}`;
 
+  const apiExtraModels = (modelNames: string[]) =>
+    `@ApiExtraModels(${modelNames.map(dtoName)})`;
+
   return {
-    echo,
-    when,
-    unless,
+    apiExtraModels,
+    dtoName,
     each,
-    importStatement,
-    importEnum,
-    importEnums,
+    echo,
+    enumName,
+    fieldsToClassProps,
+    fieldToClassProp,
+    fieldType,
+    for: each,
+    if: when,
     importDto,
     importDtos,
-    fieldType,
-    fieldToClassProp,
-    fieldsToClassProps,
+    importEnum,
+    importEnums,
+    importStatement,
+    unless,
+    when,
   };
 };

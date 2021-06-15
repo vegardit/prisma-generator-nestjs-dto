@@ -1,6 +1,9 @@
 export interface GenerateCodeOptions {
   output: string;
-  filenameCase?: "camel" | "snake" | "kebab";
-  dtoSuffix?: string;
-  classPrefix?: string;
+  includeRelationFields: boolean;
+  includeRelationFromFields: boolean;
+  dtoSuffix: string;
+  enumSuffix: string;
+  dtoPrefix: string;
+  enumPrefix: string;
 }

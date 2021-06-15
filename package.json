@@ -6,8 +6,7 @@
     "name": "Tim de Wolf",
     "url": "https://www.github.com/tpdewolf"
   },
-  "main": "dist/generator.js",
-  "typings": "dist/generator.d.ts",
+  "main": "dist/index.js",
   "keywords": [
     "prisma",
     "generator",
@@ -16,20 +15,14 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "echo 'No tests yet'",
-    "type-check": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@prisma/client": "~2.22.0",
-    "prisma": "~2.22.0"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/tpdewolf/prisma-nestjs-dto-generator"
   },
   "bin": {
-    "prisma-nestjs-dto-generator": "dist/generator.js"
+    "prisma-nestjs-dto-generator": "dist/cli.js"
   },
   "engines": {
     "node": ">=16.3"
@@ -42,15 +35,11 @@
   },
   "dependencies": {
     "@prisma/generator-helper": "^2.24.1",
+    "@prisma/sdk": "^2.24.1",
     "case": "^1.6.3"
   },
   "devDependencies": {
-    "@prisma/client": "^2.24.1",
-    "@prisma/sdk": "^2.24.1",
     "@types/node": "^15.12.2",
-    "prettier": "^2.3.1",
-    "prisma": "^2.24.1",
-    "ts-node": "^10.0.0",
     "typescript": "^4.3.2"
   }
 }
