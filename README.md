@@ -1,14 +1,18 @@
-# Prisma NestJS Dto Generator
+# Prisma Generator NestJS DTO
 
-This generator generates Dto files based on your Prisma schema
+[![Build Status](https://travis-ci.org/vegardit/prisma-generator-nestjs-dto.svg?branch=master)](https://travis-ci.org/vegardit/prisma-generator-nestjs-dto)
+[![Release](https://badge.fury.io/js/%40vegardit%2Fprisma-generator-nestjs-dto.svg)](https://www.npmjs.com/package/@vegardit/prisma-generator-nestjs-dto)
+[![License](https://img.shields.io/github/license/vegardit/prisma-generator-nestjs-dto.svg?label=license)](#license)
 
-## To install
+1. [What is it?](#what-is-it)
+1. [Usage](#usage)
+1. [License](#license)
 
-```bash
-npm install --save-dev @tpdewolf/prisma-nestjs-dto-generator
-```
 
-## Add the generator to your schema
+## <a name="what-is-it"></a>What is it?
+
+
+## <a name="usage"></a>Usage?
 
 ```prisma
 generator dto {
@@ -19,3 +23,9 @@ generator dto {
   classPrefix  = "Generated" /// (default = "")
 }
 ```
+
+### Options
+
+## <a name="license"></a>License
+
+All files are released under the [Apache License 2.0](https://github.com/vegardit/prisma-generator-nestjs-dto/blob/master/LICENSE).

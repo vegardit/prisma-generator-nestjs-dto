@@ -1,4 +1,4 @@
-import type { DMMF } from "@prisma/generator-helper";
+import type { DMMF } from '@prisma/generator-helper';
 
 interface FilterModelFieldsForClassParam {
   fields: DMMF.Field[];
@@ -14,7 +14,7 @@ export const filterModelFieldsForClass = ({
 
   if (!includeRelationFields) {
     result = result.filter(
-      ({ kind, relationName }) => !(kind === "object" && relationName)
+      ({ kind, relationName }) => !(kind === 'object' && relationName),
     );
   }
 
@@ -27,7 +27,7 @@ export const filterModelFieldsForClass = ({
 
     result = result.filter(
       ({ kind, name }) =>
-        !(kind === "scalar" && uniqueRelationFromFields.has(name))
+        !(kind === 'scalar' && uniqueRelationFromFields.has(name)),
     );
   }
 

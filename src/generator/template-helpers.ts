@@ -1,31 +1,32 @@
-import type { DMMF } from "@prisma/generator-helper";
+import type { DMMF } from '@prisma/generator-helper';
 
-const PrismaScalarToTypeScript = {
-  String: "string",
-  Boolean: "boolean",
-  Int: "number",
+const PrismaScalarToTypeScript: Record<string, string> = {
+  String: 'string',
+  Boolean: 'boolean',
+  Int: 'number',
   // [Working with BigInt](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields#working-with-bigint)
-  BigInt: "bigint",
-  Float: "number",
+  BigInt: 'bigint',
+  Float: 'number',
   // [Working with Decimal](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields#working-with-decimal)
-  Decimal: "Prisma.Decimal",
-  DateTime: "Date",
+  Decimal: 'Prisma.Decimal',
+  DateTime: 'Date',
   // [working with JSON fields](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields)
-  Json: "Prisma.JsonValue",
+  Json: 'Prisma.JsonValue',
   // [Working with Bytes](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields#working-with-bytes)
-  Bytes: "Buffer",
+  Bytes: 'Buffer',
 };
 
 const knownPrismaScalarTypes = Object.keys(PrismaScalarToTypeScript);
-export const scalarToTS = (scalar: string, useInputTypes: boolean = false) => {
+
+export const scalarToTS = (scalar: string, useInputTypes = false): string => {
   if (!knownPrismaScalarTypes.includes(scalar)) {
     throw new Error(`Unrecognized scalar type: ${scalar}`);
   }
 
   // [Working with JSON fields](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields)
   // supports different types for input / output. `Prisma.InputJsonValue` extends `Prisma.JsonValue` with `undefined`
-  if (useInputTypes && scalar === "Json") {
-    return "Prisma.InputJsonValue";
+  if (useInputTypes && scalar === 'Json') {
+    return 'Prisma.InputJsonValue';
   }
 
   return PrismaScalarToTypeScript[scalar];
@@ -33,22 +34,19 @@ export const scalarToTS = (scalar: string, useInputTypes: boolean = false) => {
 
 export const echo = (input: string) => input;
 
-export const when = (
-  condition,
-  thenTemplate: string,
-  elseTemplate: string = ""
-) => (condition ? thenTemplate : elseTemplate);
+export const when = (condition: any, thenTemplate: string, elseTemplate = '') =>
+  condition ? thenTemplate : elseTemplate;
 
 export const unless = (
-  condition,
+  condition: any,
   thenTemplate: string,
-  elseTemplate: string = ""
+  elseTemplate = '',
 ) => (!condition ? thenTemplate : elseTemplate);
 
 export const each = <T = any>(
   arr: Array<T>,
   fn: (item: T) => string,
-  joinWith = ""
+  joinWith = '',
 ) => arr.map(fn).join(joinWith);
 
 export const importStatement = (names: string[], from: string) =>
@@ -81,29 +79,23 @@ export const makeHelpers = ({
   const importDtos = (names: string[]) =>
     each(names, (name) => importDto(name));
 
-  const fieldType = (field: DMMF.Field, toInputType: boolean = false) =>
+  const fieldType = (field: DMMF.Field, toInputType = false) =>
     `${
-      field.kind === "scalar"
+      field.kind === 'scalar'
         ? scalarToTS(field.type, toInputType)
-        : field.kind === "enum"
+        : field.kind === 'enum'
         ? enumName(field.type)
         : dtoName(field.type)
-    }${when(field.isList, "[]")}`;
+    }${when(field.isList, '[]')}`;
 
-  const fieldToClassProp = (
-    field: DMMF.Field,
-    useInputTypes: boolean = false
-  ) =>
-    `${field.name}${unless(field.isRequired, "?")}: ${fieldType(
+  const fieldToClassProp = (field: DMMF.Field, useInputTypes = false) =>
+    `${field.name}${unless(field.isRequired, '?')}: ${fieldType(
       field,
-      useInputTypes
+      useInputTypes,
     )};`;
 
-  const fieldsToClassProps = (
-    fields: DMMF.Field[],
-    useInputTypes: boolean = false
-  ) =>
-    `${each(fields, (field) => fieldToClassProp(field, useInputTypes), "\n")}`;
+  const fieldsToClassProps = (fields: DMMF.Field[], useInputTypes = false) =>
+    `${each(fields, (field) => fieldToClassProp(field, useInputTypes), '\n')}`;
 
   const apiExtraModels = (modelNames: string[]) =>
     `@ApiExtraModels(${modelNames.map(dtoName)})`;

@@ -1,7 +1,7 @@
-import type { DMMF } from "@prisma/generator-helper";
-import { inspect } from "util";
-import { filterModelFieldsForClass } from "../helpers";
-import { scalarToTS, makeHelpers, echo } from "../template-helpers";
+import type { DMMF } from '@prisma/generator-helper';
+import { inspect } from 'util';
+import { filterModelFieldsForClass } from '../helpers';
+import { scalarToTS, makeHelpers, echo } from '../template-helpers';
 
 interface CreateDtoTemplateParam {
   model: DMMF.Model;
@@ -27,25 +27,27 @@ export function createDtoTemplate({
   });
 
   const importPrisma = model.fields
-    .filter(({ kind }) => kind === "scalar")
-    .some(({ type }) => scalarToTS(type).includes("Prisma"));
+    .filter(({ kind }) => kind === 'scalar')
+    .some(({ type }) => scalarToTS(type).includes('Prisma'));
 
   const dtosToImport = includeRelationFields
     ? Array.from(
         new Set(
           model.fields
-            .filter(({ kind }) => kind === "object")
+            .filter(({ kind }) => kind === 'object')
             // removes fields representing a [self-relation](https://www.prisma.io/docs/concepts/components/prisma-schema/relations#self-relations)
             .filter(({ type }) => type !== model.name)
-            .map(({ type }) => type)
-        )
+            .map(({ type }) => type),
+        ),
       )
     : [];
 
   const enumsToImport = Array.from(
     new Set(
-      model.fields.filter(({ kind }) => kind === "enum").map(({ type }) => type)
-    )
+      model.fields
+        .filter(({ kind }) => kind === 'enum')
+        .map(({ type }) => type),
+    ),
   );
 
   const fieldsToInclude = filterModelFieldsForClass({
@@ -58,7 +60,7 @@ export function createDtoTemplate({
 ${t.if(importPrisma, "import { Prisma } from '@prisma/client';")}
 ${t.if(
   includeRelationFields,
-  "import { ApiExtraModels } from '@nestjs/swagger';"
+  "import { ApiExtraModels } from '@nestjs/swagger';",
 )}
 
 ${t.importDtos(dtosToImport)}
