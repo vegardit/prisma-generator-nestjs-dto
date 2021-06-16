@@ -1,13 +1,16 @@
 import type { DMMF } from '@prisma/generator-helper';
 
-const READ_ONLY = /@DtoReadOnly/;
-const IS_GENERATED = /@DtoIsGenerated/;
+const DTO_READ_ONLY = /@DtoReadOnly/;
+const DTO_IS_GENERATED = /@DtoIsGenerated/;
+
+const getRelationScalarFields = (fields: DMMF.Field[]) =>
+  new Set(fields.flatMap(({ relationFromFields = [] }) => relationFromFields));
 
 interface FilterFieldsParam {
   fields: DMMF.Field[];
   keepReadOnly: boolean;
   keepRelations: boolean;
-  keepRelationFromFields: boolean;
+  keepRelationScalarFields: boolean;
   keepId: boolean;
   keepUpdatedAt: boolean;
 }
@@ -15,7 +18,7 @@ export const filterFields = ({
   fields,
   keepReadOnly,
   keepRelations,
-  keepRelationFromFields,
+  keepRelationScalarFields,
   keepId,
   keepUpdatedAt,
 }: FilterFieldsParam) => {
@@ -24,7 +27,7 @@ export const filterFields = ({
   if (!keepReadOnly) {
     result = result.filter(
       ({ isReadOnly, documentation = '' }) =>
-        !(isReadOnly || READ_ONLY.test(documentation)),
+        !(isReadOnly || DTO_READ_ONLY.test(documentation)),
     );
   }
 
@@ -34,16 +37,12 @@ export const filterFields = ({
     );
   }
 
-  if (!keepRelationFromFields) {
-    const uniqueRelationFromFields = fields.reduce((result, field) => {
-      const { relationFromFields = [] } = field;
-      relationFromFields.forEach((name) => result.add(name));
-      return result;
-    }, new Set<string>());
+  if (!keepRelationScalarFields) {
+    const relationScalarFields = getRelationScalarFields(fields);
 
     result = result.filter(
       ({ kind, name }) =>
-        !(kind === 'scalar' && uniqueRelationFromFields.has(name)),
+        !(kind === 'scalar' && relationScalarFields.has(name)),
     );
   }
 
@@ -57,7 +56,7 @@ export const filterFields = ({
      */
     result = result.filter(
       ({ isId, hasDefaultValue, documentation = '' }) =>
-        !(isId && (hasDefaultValue || IS_GENERATED.test(documentation))),
+        !(isId && (hasDefaultValue || DTO_IS_GENERATED.test(documentation))),
     );
   }
 

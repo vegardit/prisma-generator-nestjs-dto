@@ -1,19 +1,17 @@
 import { camel as transformCase } from 'case';
 import { logger } from '@prisma/sdk';
 import { makeHelpers } from './template-helpers';
-import {
-  makeCreateDto,
-  makeUpdateDto,
-  makeEntity,
-} from './templates/dto.template';
-import { createEnumTemplate } from './templates/enum.template';
+import { generateCreateDto } from './generate-create-dto';
+import { generateUpdateDto } from './generate-update-dto';
+import { generateEntity } from './generate-entity';
+import { generateEnum } from './generate-enum';
 
 import type { DMMF } from '@prisma/generator-helper';
 
 interface RunParam {
   dmmf: DMMF.Document;
-  includeRelations: boolean;
-  includeRelationFromFields: boolean;
+  keepRelations: boolean;
+  keepRelationScalarFields: boolean;
   createDtoPrefix: string;
   updateDtoPrefix: string;
   dtoSuffix: string;
@@ -23,7 +21,7 @@ interface RunParam {
   entitySuffix: string;
 }
 export const run = ({ dmmf, ...options }: RunParam) => {
-  const { includeRelations, includeRelationFromFields, ...preAndSuffixes } =
+  const { keepRelations, keepRelationScalarFields, ...preAndSuffixes } =
     options;
 
   const templateHelpers = makeHelpers({
@@ -35,7 +33,7 @@ export const run = ({ dmmf, ...options }: RunParam) => {
 
   const enumsFiles = enums.map((enumModel) => {
     const fileName = `${transformCase(enumModel.name)}.enum.ts`;
-    const content = createEnumTemplate({ enumModel, templateHelpers });
+    const content = generateEnum({ enumModel, templateHelpers });
 
     return { fileName, content };
   });
@@ -43,35 +41,37 @@ export const run = ({ dmmf, ...options }: RunParam) => {
   const modelFiles = models.map((model) => {
     logger.info(`Processing Model ${model.name}`);
 
-    // make create-model.dto.ts
+    // generate create-model.dto.ts
     const createDto = {
       fileName: `create-${transformCase(model.name)}.dto.ts`,
-      content: makeCreateDto({
+      content: generateCreateDto({
         model,
         templateHelpers,
       }),
     };
-    // make create-model.struct.ts
-    // make update-model.dto.ts
+    // TODO generate create-model.struct.ts
+
+    // generate update-model.dto.ts
     const updateDto = {
       fileName: `update-${transformCase(model.name)}.dto.ts`,
-      content: makeUpdateDto({
+      content: generateUpdateDto({
         model,
         templateHelpers,
       }),
     };
-    // make update-model.struct.ts
-    // make model.entity.ts
+    // TODO generate update-model.struct.ts
+
+    // generate model.entity.ts
     const entity = {
       fileName: `${transformCase(model.name)}.entity.ts`,
-      content: makeEntity({
+      content: generateEntity({
         model,
         templateHelpers,
-        includeRelationFromFields,
-        includeRelations,
+        keepRelationScalarFields,
+        keepRelations,
       }),
     };
-    // make model.struct.ts
+    // TODO generate model.struct.ts
 
     return [createDto, updateDto, entity];
   });

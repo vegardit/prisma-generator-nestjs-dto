@@ -1,15 +1,15 @@
 import type { DMMF } from '@prisma/generator-helper';
-import type { TemplateHelpers } from '../template-helpers';
+import type { TemplateHelpers } from './template-helpers';
 
-interface CreateEnumTemplateOptions {
+interface GenerateEnumParam {
   enumModel: DMMF.DatamodelEnum;
   templateHelpers: TemplateHelpers;
 }
 
-export function createEnumTemplate({
+export function generateEnum({
   enumModel,
   templateHelpers: t,
-}: CreateEnumTemplateOptions) {
+}: GenerateEnumParam) {
   const template = `
 export enum ${t.enumName(enumModel.name)} {
   ${enumModel.values.map(

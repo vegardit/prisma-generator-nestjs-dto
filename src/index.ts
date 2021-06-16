@@ -32,18 +32,16 @@ export const generate = (options: GeneratorOptions) => {
     entitySuffix = '',
   } = options.generator.config;
 
-  const includeRelations = stringToBoolean(
-    options.generator.config.includeRelations,
-  );
-  const includeRelationFromFields = stringToBoolean(
-    options.generator.config.includeRelationFromFields,
+  const keepRelations = stringToBoolean(options.generator.config.keepRelations);
+  const keepRelationScalarFields = stringToBoolean(
+    options.generator.config.keepRelationScalarFields,
     true,
   );
 
   const results = run({
     dmmf: options.dmmf,
-    includeRelations,
-    includeRelationFromFields,
+    keepRelations,
+    keepRelationScalarFields,
     createDtoPrefix,
     updateDtoPrefix,
     dtoSuffix,
