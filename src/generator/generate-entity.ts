@@ -1,4 +1,4 @@
-import { filterFields } from './helpers';
+import { filterAndMapFieldsForEntity } from './helpers';
 import { scalarToTS } from './template-helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
@@ -12,25 +12,21 @@ interface GenerateEntityParam {
 }
 export const generateEntity = ({
   model,
-  keepRelations,
-  keepRelationScalarFields,
   templateHelpers: t,
 }: GenerateEntityParam) => {
   const importPrisma = model.fields
     .filter(({ kind }) => kind === 'scalar')
     .some(({ type }) => scalarToTS(type).includes('Prisma'));
 
-  const entitiesToImport = keepRelations
-    ? Array.from(
-        new Set(
-          model.fields
-            .filter(({ kind }) => kind === 'object')
-            // removes fields representing a [self-relation](https://www.prisma.io/docs/concepts/components/prisma-schema/relations#self-relations)
-            .filter(({ type }) => type !== model.name)
-            .map(({ type }) => type),
-        ),
-      )
-    : [];
+  const entitiesToImport = Array.from(
+    new Set(
+      model.fields
+        .filter(({ kind }) => kind === 'object')
+        // removes fields representing a [self-relation](https://www.prisma.io/docs/concepts/components/prisma-schema/relations#self-relations)
+        .filter(({ type }) => type !== model.name)
+        .map(({ type }) => type),
+    ),
+  );
 
   const enumsToImport = Array.from(
     new Set(
@@ -40,29 +36,28 @@ export const generateEntity = ({
     ),
   );
 
-  const fieldsToInclude = filterFields({
+  const fieldsToInclude = filterAndMapFieldsForEntity({
     fields: model.fields,
-    keepReadOnly: true,
-    keepId: true,
-    keepUpdatedAt: true,
-    keepRelations: keepRelations,
-    keepRelationScalarFields: keepRelationScalarFields,
   });
 
   const template = `
-import { ${t.if(importPrisma, 'Prisma,')} ${model.name} as ${
-    model.name
-  }Type } from '@prisma/client';
-${t.if(keepRelations, "import { ApiExtraModels } from '@nestjs/swagger';")}
-
-${t.importEntities(entitiesToImport)}
-${t.importEnums(enumsToImport)}
+  ${t.if(
+    importPrisma || enumsToImport.length,
+    `import { ${t.if(
+      importPrisma,
+      'Prisma,',
+    )} ${enumsToImport} } from '@prisma/client';`,
+  )}
 
 ${t.if(
-  keepRelations && entitiesToImport.length,
-  t.apiExtraModels(entitiesToImport),
+  entitiesToImport.length,
+  "import { ApiExtraModels } from '@nestjs/swagger';",
 )}
-export class ${t.entityName(model.name)} implements ${model.name}Type{
+
+${t.importEntities(entitiesToImport)}
+
+${t.if(entitiesToImport.length, t.apiExtraModels(entitiesToImport))}
+export class ${t.entityName(model.name)} {
   ${t.fieldsToEntityProps(fieldsToInclude)}
 }
 `;

@@ -1,4 +1,5 @@
 import type { DMMF } from '@prisma/generator-helper';
+import { ParsedField } from './types';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
   String: 'string',
@@ -56,8 +57,6 @@ interface MakeHelpersParam {
   createDtoPrefix: string;
   updateDtoPrefix: string;
   dtoSuffix: string;
-  enumPrefix: string;
-  enumSuffix: string;
   entityPrefix: string;
   entitySuffix: string;
   transformCase?: (item: string) => string;
@@ -66,8 +65,6 @@ export const makeHelpers = ({
   createDtoPrefix,
   updateDtoPrefix,
   dtoSuffix,
-  enumPrefix,
-  enumSuffix,
   entityPrefix,
   entitySuffix,
   transformCase = echo,
@@ -77,29 +74,23 @@ export const makeHelpers = ({
     `${createDtoPrefix}${name}${dtoSuffix}`;
   const updateDtoName = (name: string) =>
     `${updateDtoPrefix}${name}${dtoSuffix}`;
-  const enumName = (name: string) => `${enumPrefix}${name}${enumSuffix}`;
-
-  const importEnum = (name: string) =>
-    importStatement([name].map(enumName), `./${transformCase(name)}.enum`);
-  const importEnums = (names: string[]) =>
-    each(names, (name) => importEnum(name));
 
   const importEntity = (name: string) =>
     importStatement([name].map(entityName), `./${transformCase(name)}.entity`);
   const importEntities = (names: string[]) =>
     each(names, (name) => importEntity(name));
 
-  const fieldType = (field: DMMF.Field, toInputType = false) =>
+  const fieldType = (field: ParsedField, toInputType = false) =>
     `${
       field.kind === 'scalar'
         ? scalarToTS(field.type, toInputType)
         : field.kind === 'enum'
-        ? enumName(field.type)
+        ? field.type
         : entityName(field.type)
     }${when(field.isList, '[]')}`;
 
   const fieldToDtoProp = (
-    field: DMMF.Field,
+    field: ParsedField,
     useInputTypes = false,
     forceOptional = false,
   ) =>
@@ -109,7 +100,7 @@ export const makeHelpers = ({
     )}: ${fieldType(field, useInputTypes)};`;
 
   const fieldsToDtoProps = (
-    fields: DMMF.Field[],
+    fields: ParsedField[],
     useInputTypes = false,
     forceOptional = false,
   ) =>
@@ -119,13 +110,14 @@ export const makeHelpers = ({
       '\n',
     )}`;
 
-  const fieldToEntityProp = (field: DMMF.Field) =>
-    `${field.name}: ${fieldType(field)} ${unless(
-      field.isRequired,
+  // TODO handle 'selectable' fields (should be '?' and not nullable)
+  const fieldToEntityProp = (field: ParsedField) =>
+    `${field.name}${unless(field.isRequired, '?')}: ${fieldType(field)} ${when(
+      field.isNullable,
       ' | null',
     )};`;
 
-  const fieldsToEntityProps = (fields: DMMF.Field[]) =>
+  const fieldsToEntityProps = (fields: ParsedField[]) =>
     `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
 
   const apiExtraModels = (modelNames: string[]) =>
@@ -138,7 +130,6 @@ export const makeHelpers = ({
     updateDtoName,
     each,
     echo,
-    enumName,
     fieldsToDtoProps,
     fieldToDtoProp,
     fieldToEntityProp,
@@ -147,8 +138,6 @@ export const makeHelpers = ({
     for: each,
     if: when,
     importEntities,
-    importEnum,
-    importEnums,
     importStatement,
     unless,
     when,

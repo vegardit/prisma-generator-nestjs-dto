@@ -1,4 +1,4 @@
-import { filterFields } from './helpers';
+import { filterAndMapFieldsForCreateDto } from './helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
@@ -20,22 +20,17 @@ export const generateCreateDto = ({
     ),
   );
 
-  const fieldsToInclude = filterFields({
+  const fieldsToInclude = filterAndMapFieldsForCreateDto({
     fields: model.fields,
-    keepReadOnly: false,
-    keepRelations: false,
-    keepRelationScalarFields: false,
-    keepId: false,
-    keepUpdatedAt: false,
   });
 
   const template = `
-import { Prisma } from '@prisma/client';
-${t.importEnums(enumsToImport)}
+${t.if(
+  enumsToImport.length,
+  `import { ${enumsToImport} } from '@prisma/client';`,
+)}
 
-export class ${t.createDtoName(model.name)} implements Prisma.${
-    model.name
-  }CreateInput {
+export class ${t.createDtoName(model.name)} {
   ${t.fieldsToDtoProps(fieldsToInclude, true)}
 }
 

@@ -1,4 +1,4 @@
-import { filterFields } from './helpers';
+import { filterAndMapFieldsForUpdateDto } from './helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
@@ -19,22 +19,17 @@ export const generateUpdateDto = ({
     ),
   );
 
-  const fieldsToInclude = filterFields({
+  const fieldsToInclude = filterAndMapFieldsForUpdateDto({
     fields: model.fields,
-    keepReadOnly: false,
-    keepRelations: false,
-    keepRelationScalarFields: false,
-    keepId: false,
-    keepUpdatedAt: false,
   });
 
   const template = `
-import { Prisma } from '@prisma/client';
-${t.importEnums(enumsToImport)}
+${t.if(
+  enumsToImport.length,
+  `import { ${enumsToImport} } from '@prisma/client';`,
+)}
 
-export class ${t.updateDtoName(model.name)} implements Prisma.${
-    model.name
-  }UpdateInput {
+export class ${t.updateDtoName(model.name)} {
   ${t.fieldsToDtoProps(fieldsToInclude, true, true)}
 }
 `;

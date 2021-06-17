@@ -4,7 +4,6 @@ import { makeHelpers } from './template-helpers';
 import { generateCreateDto } from './generate-create-dto';
 import { generateUpdateDto } from './generate-update-dto';
 import { generateEntity } from './generate-entity';
-import { generateEnum } from './generate-enum';
 
 import type { DMMF } from '@prisma/generator-helper';
 
@@ -15,8 +14,6 @@ interface RunParam {
   createDtoPrefix: string;
   updateDtoPrefix: string;
   dtoSuffix: string;
-  enumPrefix: string;
-  enumSuffix: string;
   entityPrefix: string;
   entitySuffix: string;
 }
@@ -29,14 +26,6 @@ export const run = ({ dmmf, ...options }: RunParam) => {
     ...preAndSuffixes,
   });
   const models = dmmf.datamodel.models;
-  const enums = dmmf.datamodel.enums;
-
-  const enumsFiles = enums.map((enumModel) => {
-    const fileName = `${transformCase(enumModel.name)}.enum.ts`;
-    const content = generateEnum({ enumModel, templateHelpers });
-
-    return { fileName, content };
-  });
 
   const modelFiles = models.map((model) => {
     logger.info(`Processing Model ${model.name}`);
@@ -76,5 +65,5 @@ export const run = ({ dmmf, ...options }: RunParam) => {
     return [createDto, updateDto, entity];
   });
 
-  return [...modelFiles, ...enumsFiles].flat();
+  return [...modelFiles].flat();
 };

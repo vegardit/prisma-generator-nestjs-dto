@@ -26,8 +26,6 @@ export const generate = (options: GeneratorOptions) => {
     createDtoPrefix = 'Create',
     updateDtoPrefix = 'Update',
     dtoSuffix = 'Dto',
-    enumSuffix = '',
-    enumPrefix = '',
     entityPrefix = '',
     entitySuffix = '',
   } = options.generator.config;
@@ -45,8 +43,6 @@ export const generate = (options: GeneratorOptions) => {
     createDtoPrefix,
     updateDtoPrefix,
     dtoSuffix,
-    enumPrefix,
-    enumSuffix,
     entityPrefix,
     entitySuffix,
   });
