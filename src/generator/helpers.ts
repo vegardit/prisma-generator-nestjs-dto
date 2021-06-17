@@ -228,7 +228,7 @@ export const filterAndMapFieldsForEntity = ({
         );
       });
 
-      isNullable = !isAnyRelationRequired
+      isNullable = !isAnyRelationRequired;
     }
 
     return [
