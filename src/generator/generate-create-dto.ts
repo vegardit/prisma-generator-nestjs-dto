@@ -2,7 +2,6 @@ import { filterAndMapFieldsForCreateDto } from './helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
-import { inspect } from 'util';
 
 interface GenerateCreateDtoParam {
   model: DMMF.Model;
@@ -33,8 +32,6 @@ ${t.if(
 export class ${t.createDtoName(model.name)} {
   ${t.fieldsToDtoProps(fieldsToInclude, true)}
 }
-
-const fields = [${model.fields.map((field) => inspect(field))}];
 `;
 
   return template;
