@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import * as path from 'path';
+import makeDir from 'make-dir';
 import { generatorHandler } from '@prisma/generator-helper';
 import { parseEnvValue } from '@prisma/sdk';
 
@@ -47,9 +48,11 @@ export const generate = (options: GeneratorOptions) => {
     entitySuffix,
   });
 
-  return Promise.all(
-    results.map(({ fileName, content }) =>
-      fs.writeFile(path.join(output, fileName), content),
+  return makeDir(output).then(() =>
+    Promise.all(
+      results.map(({ fileName, content }) =>
+        fs.writeFile(path.join(output, fileName), content),
+      ),
     ),
   );
 };

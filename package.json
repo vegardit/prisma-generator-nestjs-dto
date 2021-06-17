@@ -39,7 +39,8 @@
   "dependencies": {
     "@prisma/generator-helper": "^2.24.1",
     "@prisma/sdk": "^2.24.1",
-    "case": "^1.6.3"
+    "case": "^1.6.3",
+    "make-dir": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^15.12.2",
