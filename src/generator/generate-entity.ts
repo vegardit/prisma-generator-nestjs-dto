@@ -1,8 +1,73 @@
-import { filterAndMapFieldsForEntity } from './helpers';
 import { scalarToTS } from './template-helpers';
+import { getRelationScalars } from './helpers';
+import { isRelation } from './field-classifiers';
+import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
+import type { ParsedField } from './types';
+
+interface FilterAndMapFieldsParam {
+  fields: DMMF.Field[];
+}
+export const filterAndMapFields = ({
+  fields,
+}: FilterAndMapFieldsParam): ParsedField[] => {
+  const relationScalarFields = getRelationScalars(fields);
+  const relationScalarFieldNames = Object.keys(relationScalarFields);
+
+  const filteredFields = fields.reduce((result, field) => {
+    const { kind, name, type, documentation = '', isList } = field;
+    let isNullable = !field.isRequired;
+    let isRequired = true;
+
+    if (DTO_ENTITY_HIDDEN.test(documentation)) return result;
+
+    // relation fields are never required in an entity.
+    // they can however be `selected` and thus might optionally be included in the
+    // response from PrismaClient
+    if (isRelation({ field })) {
+      isRequired = false;
+      isNullable = field.isList
+        ? false
+        : field.isRequired
+        ? false
+        : !DTO_RELATION_REQUIRED.test(documentation);
+    }
+
+    if (relationScalarFieldNames.includes(name)) {
+      const { [name]: relationNames } = relationScalarFields;
+      const isAnyRelationRequired = relationNames.some((relationFieldName) => {
+        const relationField = fields.find(
+          (anyField) => anyField.name === relationFieldName,
+        );
+        if (!relationField) return false;
+
+        return (
+          relationField.isRequired ||
+          DTO_RELATION_REQUIRED.test(relationField.documentation || '')
+        );
+      });
+
+      isNullable = !isAnyRelationRequired;
+    }
+
+    return [
+      ...result,
+      {
+        kind,
+        name,
+        type,
+        isRequired,
+        isList,
+        isNullable,
+        documentation,
+      },
+    ];
+  }, [] as ParsedField[]);
+
+  return filteredFields;
+};
 
 interface GenerateEntityParam {
   model: DMMF.Model;
@@ -36,7 +101,7 @@ export const generateEntity = ({
     ),
   );
 
-  const fieldsToInclude = filterAndMapFieldsForEntity({
+  const fieldsToInclude = filterAndMapFields({
     fields: model.fields,
   });
 
