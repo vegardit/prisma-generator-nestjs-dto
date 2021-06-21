@@ -112,14 +112,8 @@ export const generateEntity = ({
     )} ${enumsToImport} } from '@prisma/client';`,
   )}
 
-${t.if(
-  entitiesToImport.length,
-  "import { ApiExtraModels } from '@nestjs/swagger';",
-)}
+  ${t.importEntities(entitiesToImport)}
 
-${t.importEntities(entitiesToImport)}
-
-${t.if(entitiesToImport.length, t.apiExtraModels(entitiesToImport))}
 export class ${t.entityName(model.name)} {
   ${t.fieldsToEntityProps(fieldsToInclude)}
 }
