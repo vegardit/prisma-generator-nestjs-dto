@@ -1,6 +1,20 @@
 import { DTO_READ_ONLY } from './annotations';
 import type { DMMF } from '@prisma/generator-helper';
 
+export const isAnnotatedWith = (
+  field: DMMF.Field,
+  annotation: RegExp,
+): boolean => {
+  const { documentation = '' } = field;
+  return annotation.test(documentation);
+};
+
+export const isAnnotatedWithOneOf = (
+  field: DMMF.Field,
+  annotations: RegExp[],
+): boolean =>
+  annotations.some((annotation) => isAnnotatedWith(field, annotation));
+
 // Field properties
 // isGenerated, !meaning unknown - assuming this means that the field itself is generated, not the value
 // isId,
@@ -63,10 +77,8 @@ export const isIdWithDefaultValue = (param: FieldClassifierParam) =>
  * @param {FieldClassifierParam} param
  * @returns {boolean}
  */
-export const isReadOnly = ({ field }: FieldClassifierParam) => {
-  const { documentation = '' } = field;
-  return field.isReadOnly || DTO_READ_ONLY.test(documentation);
-};
+export const isReadOnly = ({ field }: FieldClassifierParam) =>
+  field.isReadOnly || isAnnotatedWith(field, DTO_READ_ONLY);
 
 export const isUpdatedAt = ({ field }: FieldClassifierParam) => {
   return field.isUpdatedAt;

@@ -1,7 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
 
 export interface ParsedField {
-  kind: DMMF.FieldKind;
+  kind: DMMF.FieldKind | 'relation-input';
   name: string;
   type: string;
   documentation?: string;
@@ -13,4 +13,10 @@ export interface ParsedField {
    * **must not be `true` when `isRequired` is `true`**
    */
   isNullable?: boolean;
+}
+
+export interface ExtraModel {
+  originalName: string;
+  preAndPostfixedName: string;
+  isLocal?: boolean;
 }

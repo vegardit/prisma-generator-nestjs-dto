@@ -27,6 +27,7 @@ npm install --save-dev @vegardit/prisma-generator-nestjs-dto
 generator nestjsDto {
   provider        = "prisma-generator-nestjs-dto"
   output          = "../src/generated/nestjs-dto"
+  exportRelationModifierClasses = "true"
   createDtoPrefix = "Create"
   updateDtoPrefix = "Update"
   dtoSuffix       = "Dto"
@@ -40,6 +41,7 @@ generator nestjsDto {
 All options are optional.
 
 - [`output`]: (default: `"../src/generated/nestjs-dto"`) - output path relative to your `schema.prisma` file
+- [`exportRelationModifierClasses`]: (default: `"true"`) - Should extra classes generated for relationship field operations on DTOs be exported?
 - [`createDtoPrefix`]: (default: `"Create"`) - phrase to prefix every `CreateDTO` class with
 - [`updateDtoPrefix`]: (default: `"Update"`) - phrase to prefix every `UpdateDTO` class with
 - [`dtoSuffix`]: (default: `"Dto"`) - phrase to suffix every `CreateDTO` and `UpdateDTO` class with

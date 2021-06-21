@@ -72,8 +72,6 @@ export const filterAndMapFields = ({
 interface GenerateEntityParam {
   model: DMMF.Model;
   templateHelpers: TemplateHelpers;
-  keepRelations: boolean;
-  keepRelationScalarFields: boolean;
 }
 export const generateEntity = ({
   model,

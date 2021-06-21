@@ -1,4 +1,7 @@
-import { camel as transformCase } from 'case';
+import {
+  camel as transformFileNameCase,
+  pascal as transformClassNameCase,
+} from 'case';
 import { logger } from '@prisma/sdk';
 import { makeHelpers } from './template-helpers';
 import { generateCreateDto } from './generate-create-dto';
@@ -9,8 +12,7 @@ import type { DMMF } from '@prisma/generator-helper';
 
 interface RunParam {
   dmmf: DMMF.Document;
-  keepRelations: boolean;
-  keepRelationScalarFields: boolean;
+  exportRelationModifierClasses: boolean;
   createDtoPrefix: string;
   updateDtoPrefix: string;
   dtoSuffix: string;
@@ -18,23 +20,25 @@ interface RunParam {
   entitySuffix: string;
 }
 export const run = ({ dmmf, ...options }: RunParam) => {
-  const { keepRelations, keepRelationScalarFields, ...preAndSuffixes } =
-    options;
+  const { exportRelationModifierClasses, ...preAndSuffixes } = options;
 
   const templateHelpers = makeHelpers({
-    transformCase,
+    transformFileNameCase,
+    transformClassNameCase,
     ...preAndSuffixes,
   });
-  const models = dmmf.datamodel.models;
+  const allModels = dmmf.datamodel.models;
 
-  const modelFiles = models.map((model) => {
+  const modelFiles = allModels.map((model) => {
     logger.info(`Processing Model ${model.name}`);
 
     // generate create-model.dto.ts
     const createDto = {
-      fileName: `create-${transformCase(model.name)}.dto.ts`,
+      fileName: `create-${transformFileNameCase(model.name)}.dto.ts`,
       content: generateCreateDto({
         model,
+        allModels,
+        exportRelationModifierClasses,
         templateHelpers,
       }),
     };
@@ -42,9 +46,11 @@ export const run = ({ dmmf, ...options }: RunParam) => {
 
     // generate update-model.dto.ts
     const updateDto = {
-      fileName: `update-${transformCase(model.name)}.dto.ts`,
+      fileName: `update-${transformFileNameCase(model.name)}.dto.ts`,
       content: generateUpdateDto({
         model,
+        allModels,
+        exportRelationModifierClasses,
         templateHelpers,
       }),
     };
@@ -52,12 +58,10 @@ export const run = ({ dmmf, ...options }: RunParam) => {
 
     // generate model.entity.ts
     const entity = {
-      fileName: `${transformCase(model.name)}.entity.ts`,
+      fileName: `${transformFileNameCase(model.name)}.entity.ts`,
       content: generateEntity({
         model,
         templateHelpers,
-        keepRelationScalarFields,
-        keepRelations,
       }),
     };
     // TODO generate model.struct.ts

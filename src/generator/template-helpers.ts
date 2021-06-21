@@ -1,4 +1,3 @@
-import type { DMMF } from '@prisma/generator-helper';
 import { ParsedField } from './types';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
@@ -59,7 +58,8 @@ interface MakeHelpersParam {
   dtoSuffix: string;
   entityPrefix: string;
   entitySuffix: string;
-  transformCase?: (item: string) => string;
+  transformClassNameCase?: (item: string) => string;
+  transformFileNameCase?: (item: string) => string;
 }
 export const makeHelpers = ({
   createDtoPrefix,
@@ -67,7 +67,8 @@ export const makeHelpers = ({
   dtoSuffix,
   entityPrefix,
   entitySuffix,
-  transformCase = echo,
+  transformClassNameCase = echo,
+  transformFileNameCase = echo,
 }: MakeHelpersParam) => {
   const entityName = (name: string) => `${entityPrefix}${name}${entitySuffix}`;
   const createDtoName = (name: string) =>
@@ -76,15 +77,34 @@ export const makeHelpers = ({
     `${updateDtoPrefix}${name}${dtoSuffix}`;
 
   const importEntity = (name: string) =>
-    importStatement([name].map(entityName), `./${transformCase(name)}.entity`);
+    importStatement(
+      [name].map(entityName),
+      `./${transformFileNameCase(name)}.entity`,
+    );
   const importEntities = (names: string[]) =>
     each(names, (name) => importEntity(name));
+
+  const importCreateDto = (name: string) =>
+    importStatement(
+      [name].map(createDtoName),
+      `./create-${transformFileNameCase(name)}.dto`,
+    );
+  const importCreateDtos = (names: string[]) =>
+    each(names, (name) => importCreateDto(name));
+
+  const importUpdateDto = (name: string) =>
+    importStatement(
+      [name].map(updateDtoName),
+      `./update-${transformFileNameCase(name)}.dto`,
+    );
+  const importUpdateDtos = (names: string[]) =>
+    each(names, (name) => importUpdateDto(name));
 
   const fieldType = (field: ParsedField, toInputType = false) =>
     `${
       field.kind === 'scalar'
         ? scalarToTS(field.type, toInputType)
-        : field.kind === 'enum'
+        : field.kind === 'enum' || field.kind === 'relation-input'
         ? field.type
         : entityName(field.type)
     }${when(field.isList, '[]')}`;
@@ -124,6 +144,13 @@ export const makeHelpers = ({
     `@ApiExtraModels(${modelNames.map(entityName)})`;
 
   return {
+    config: {
+      createDtoPrefix,
+      updateDtoPrefix,
+      dtoSuffix,
+      entityPrefix,
+      entitySuffix,
+    },
     apiExtraModels,
     entityName,
     createDtoName,
@@ -138,7 +165,11 @@ export const makeHelpers = ({
     for: each,
     if: when,
     importEntities,
+    importCreateDtos,
+    importUpdateDtos,
     importStatement,
+    transformClassNameCase,
+    transformFileNameCase,
     unless,
     when,
   };
