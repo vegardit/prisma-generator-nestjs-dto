@@ -25,16 +25,34 @@ interface FieldClassifierParam {
   field: DMMF.Field;
 }
 
+export const isId = ({ field }: FieldClassifierParam) => {
+  return field.isId;
+};
+
+export const isRequired = ({ field }: FieldClassifierParam) => {
+  return field.isRequired;
+};
+
+export const isScalar = ({ field }: FieldClassifierParam) => {
+  return field.kind === 'scalar';
+};
+
+export const hasDefaultValue = ({ field }: FieldClassifierParam) => {
+  return field.hasDefaultValue;
+};
+
+export const isUnique = ({ field }: FieldClassifierParam) => {
+  return field.isUnique;
+};
+
 export const isRelation = ({ field }: FieldClassifierParam) => {
   const { kind /*, relationName */ } = field;
   // indicates a `relation` field
   return kind === 'object' /* && relationName */;
 };
 
-export const isIdWithDefaultValue = ({ field }: FieldClassifierParam) => {
-  const { isId, hasDefaultValue } = field;
-  return isId && hasDefaultValue;
-};
+export const isIdWithDefaultValue = (param: FieldClassifierParam) =>
+  isId(param) && hasDefaultValue(param);
 
 /**
  * checks if a DMMF.Field either has `isReadOnly` property or is annotated with
@@ -66,6 +84,5 @@ export const isUpdatedAt = ({ field }: FieldClassifierParam) => {
  *  }
  *  ```
  */
-export const isRequiredWithDefault = ({
-  field: { isRequired, hasDefaultValue },
-}: FieldClassifierParam) => isRequired && hasDefaultValue;
+export const isRequiredWithDefaultValue = (param: FieldClassifierParam) =>
+  isRequired(param) && hasDefaultValue(param);

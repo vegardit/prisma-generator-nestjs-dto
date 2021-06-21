@@ -4,7 +4,7 @@ import {
   isRelation,
   isIdWithDefaultValue,
   isUpdatedAt,
-  isRequiredWithDefault,
+  isRequiredWithDefaultValue,
 } from './field-classifiers';
 import { DTO_CREATE_OPTIONAL } from './annotations';
 
@@ -36,10 +36,8 @@ export const filterAndMapFields = ({
     if (!isDtoOptional) {
       if (isIdWithDefaultValue({ field })) return result;
       if (isUpdatedAt({ field })) return result;
-      if (isRequiredWithDefault({ field })) return result;
+      if (isRequiredWithDefaultValue({ field })) return result;
     }
-
-    const isRequired = isDtoOptional ? false : field.isRequired;
 
     return [
       ...result,
@@ -47,7 +45,7 @@ export const filterAndMapFields = ({
         kind,
         name,
         type,
-        isRequired,
+        isRequired: isDtoOptional ? false : field.isRequired,
         isList,
         documentation,
       },
