@@ -66,6 +66,10 @@ model Post {
 - @DtoUpdateHidden - omits field in `UpdateDTO`
 - @DtoUpdateOptional- adds field **optionally** to `UpdateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
 - @DtoRelationRequired - marks relation **required** in `Entity` although it's optional in PrismaSchema - useful when you don't want (SQL) `ON DELETE CASCADE` behavior - but your logical data schema sees this relation as required
+- @DtoRelationCanCreateOnCreate - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `CreateDTO` - useful when you want to allow to create related model instances
+- @DtoRelationCanConnectOnCreate - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `CreateDTO` - useful when you want/need to connect to an existing related instance
+- @DtoRelationCanCreateOnUpdate - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `UpdateDTO` - useful when you want to allow to create related model instances
+- @DtoRelationCanConnectOnUpdate - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `UpdateDTO` - useful when you want/need to connect to an existing related instance
 
 ## <a name="example"></a>Example
 
@@ -124,12 +128,9 @@ model Post {
 
   ```ts
   // src/generated/nestjs-dto/response.entity.ts
-  import { ApiExtraModels } from '@nestjs/swagger';
-
   import { User } from './user.entity';
   import { Question } from './question.entity';
 
-  @ApiExtraModels(User, Question)
   export class Response {
     id: string;
     createdAt: Date;
