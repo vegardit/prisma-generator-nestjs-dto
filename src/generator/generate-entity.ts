@@ -48,6 +48,7 @@ export const filterAndMapFields = ({
         );
       });
 
+      overrides.isRequired = true;
       overrides.isNullable = !isAnyRelationRequired;
     }
 
