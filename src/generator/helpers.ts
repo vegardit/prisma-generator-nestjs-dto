@@ -99,7 +99,7 @@ export const getRelationConnectInputFields = ({
   return foreignFields;
 };
 
-interface GenerateRelationInputTypeParam {
+interface GenerateRelationInputParam {
   field: DMMF.Field;
   model: DMMF.Model;
   allModels: DMMF.Model[];
@@ -110,7 +110,7 @@ interface GenerateRelationInputTypeParam {
   canCreateAnnotation: RegExp;
   canConnectAnnotation: RegExp;
 }
-export const generateRelationInputType = ({
+export const generateRelationInput = ({
   field,
   model,
   allModels,
@@ -118,7 +118,7 @@ export const generateRelationInputType = ({
   preAndSuffixClassName,
   canCreateAnnotation,
   canConnectAnnotation,
-}: GenerateRelationInputTypeParam) => {
+}: GenerateRelationInputParam) => {
   const relationInputClassProps: Array<Pick<ParsedField, 'name' | 'type'>> = [];
 
   const extraModels: ExtraModel[] = [];

@@ -1,6 +1,6 @@
 import {
   getRelationScalars,
-  generateRelationInputType,
+  generateRelationInput,
   mapDMMFToParsedField,
 } from './helpers';
 import {
@@ -55,7 +55,7 @@ export const filterAndMapFields = ({
       if (!isAnnotatedWithOneOf(field, DTO_RELATION_MODIFIERS_ON_CREATE)) {
         return result;
       }
-      const relationInputType = generateRelationInputType({
+      const relationInputType = generateRelationInput({
         field,
         model,
         allModels,
