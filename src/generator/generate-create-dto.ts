@@ -50,8 +50,8 @@ export const filterAndMapFields = ({
     const { name } = field;
     const overrides: Partial<DMMF.Field> = {};
 
-    if (isReadOnly({ field })) return result;
-    if (isRelation({ field })) {
+    if (isReadOnly(field)) return result;
+    if (isRelation(field)) {
       if (!isAnnotatedWithOneOf(field, DTO_RELATION_MODIFIERS_ON_CREATE)) {
         return result;
       }
@@ -84,9 +84,9 @@ export const filterAndMapFields = ({
     const isDtoOptional = isAnnotatedWith(field, DTO_CREATE_OPTIONAL);
 
     if (!isDtoOptional) {
-      if (isIdWithDefaultValue({ field })) return result;
-      if (isUpdatedAt({ field })) return result;
-      if (isRequiredWithDefaultValue({ field })) return result;
+      if (isIdWithDefaultValue(field)) return result;
+      if (isUpdatedAt(field)) return result;
+      if (isRequiredWithDefaultValue(field)) return result;
     }
     if (isDtoOptional) {
       overrides.isRequired = false;

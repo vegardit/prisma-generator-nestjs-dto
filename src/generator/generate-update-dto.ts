@@ -53,9 +53,9 @@ export const filterAndMapFields = ({
 
     if (isAnnotatedWith(field, DTO_UPDATE_HIDDEN)) return result;
 
-    if (isReadOnly({ field })) return result;
-    if (isId({ field })) return result;
-    if (isRelation({ field })) {
+    if (isReadOnly(field)) return result;
+    if (isId(field)) return result;
+    if (isRelation(field)) {
       if (!isAnnotatedWithOneOf(field, DTO_RELATION_MODIFIERS_ON_UPDATE)) {
         return result;
       }
@@ -82,7 +82,7 @@ export const filterAndMapFields = ({
     const isDtoOptional = isAnnotatedWith(field, DTO_UPDATE_OPTIONAL);
 
     if (!isDtoOptional) {
-      if (isUpdatedAt({ field })) return result;
+      if (isUpdatedAt(field)) return result;
     }
 
     return [...result, mapDMMFToParsedField(field, overrides)];

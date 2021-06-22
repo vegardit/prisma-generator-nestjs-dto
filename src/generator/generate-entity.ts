@@ -25,7 +25,7 @@ export const filterAndMapFields = ({
     // relation fields are never required in an entity.
     // they can however be `selected` and thus might optionally be included in the
     // response from PrismaClient
-    if (isRelation({ field })) {
+    if (isRelation(field)) {
       overrides.isRequired = false;
       overrides.isNullable = field.isList
         ? false
@@ -43,7 +43,7 @@ export const filterAndMapFields = ({
         if (!relationField) return false;
 
         return (
-          isRequired({ field: relationField }) ||
+          isRequired(relationField) ||
           isAnnotatedWith(relationField, DTO_RELATION_REQUIRED)
         );
       });

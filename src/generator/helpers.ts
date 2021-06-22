@@ -23,6 +23,7 @@ export const getRelationScalars = (
   const scalars = fields.flatMap(
     ({ relationFromFields = [] }) => relationFromFields,
   );
+
   return scalars.reduce(
     (result, scalar) => ({
       ...result,
@@ -46,9 +47,9 @@ export const getRelationConnectInputFields = ({
 }: GetRelationConnectInputFieldsParam): Set<DMMF.Field> => {
   const { name, type, relationToFields = [] } = field;
 
-  if (!isRelation({ field })) {
+  if (!isRelation(field)) {
     throw new Error(
-      `Can not generate RelationConnectInputClass for field '${name}'. Not a relation field.`,
+      `Can not resolve RelationConnectInputFields for field '${name}'. Not a relation field.`,
     );
   }
 
@@ -58,13 +59,13 @@ export const getRelationConnectInputFields = ({
 
   if (!relatedModel) {
     throw new Error(
-      `Can not generate RelationConnectInputClass for field '${name}'. Related model '${type}' unknown.`,
+      `Can not resolve RelationConnectInputFields for field '${name}'. Related model '${type}' unknown.`,
     );
   }
 
   if (!relationToFields.length) {
     throw new Error(
-      `Can not generate RelationConnectInputClass for field '${name}'. Foreign keys are unknown.`,
+      `Can not resolve RelationConnectInputFields for field '${name}'. Foreign keys are unknown.`,
     );
   }
 
@@ -82,18 +83,12 @@ export const getRelationConnectInputFields = ({
   });
 
   const idFields = relatedModel.fields.filter((relatedModelField) =>
-    isId({ field: relatedModelField }),
+    isId(relatedModelField),
   );
 
   const uniqueFields = relatedModel.fields.filter((relatedModelField) =>
-    isUnique({ field: relatedModelField }),
+    isUnique(relatedModelField),
   );
-
-  // const requiredScalarFields = relatedModel.fields.find(
-  //   (relatedModelField) =>
-  //     isScalar({ field: relatedModelField }) &&
-  //     isRequired({ field: relatedModelField }),
-  // );
 
   const foreignFields = new Set<DMMF.Field>([
     ...foreignKeyFields,

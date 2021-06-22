@@ -130,7 +130,6 @@ export const makeHelpers = ({
       '\n',
     )}`;
 
-  // TODO handle 'selectable' fields (should be '?' and not nullable)
   const fieldToEntityProp = (field: ParsedField) =>
     `${field.name}${unless(field.isRequired, '?')}: ${fieldType(field)} ${when(
       field.isNullable,
