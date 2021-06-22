@@ -1,6 +1,6 @@
 import { scalarToTS } from './template-helpers';
-import { getRelationScalars } from './helpers';
-import { isRelation } from './field-classifiers';
+import { getRelationScalars, mapDMMFToParsedField } from './helpers';
+import { isAnnotatedWith, isRelation, isRequired } from './field-classifiers';
 import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
@@ -17,22 +17,21 @@ export const filterAndMapFields = ({
   const relationScalarFieldNames = Object.keys(relationScalarFields);
 
   const filteredFields = fields.reduce((result, field) => {
-    const { kind, name, type, documentation = '', isList } = field;
-    let isNullable = !field.isRequired;
-    let isRequired = true;
+    const { name } = field;
+    const overrides: Partial<DMMF.Field> = { isNullable: !field.isRequired };
 
-    if (DTO_ENTITY_HIDDEN.test(documentation)) return result;
+    if (isAnnotatedWith(field, DTO_ENTITY_HIDDEN)) return result;
 
     // relation fields are never required in an entity.
     // they can however be `selected` and thus might optionally be included in the
     // response from PrismaClient
     if (isRelation({ field })) {
-      isRequired = false;
-      isNullable = field.isList
+      overrides.isRequired = false;
+      overrides.isNullable = field.isList
         ? false
         : field.isRequired
         ? false
-        : !DTO_RELATION_REQUIRED.test(documentation);
+        : !isAnnotatedWith(field, DTO_RELATION_REQUIRED);
     }
 
     if (relationScalarFieldNames.includes(name)) {
@@ -44,26 +43,15 @@ export const filterAndMapFields = ({
         if (!relationField) return false;
 
         return (
-          relationField.isRequired ||
-          DTO_RELATION_REQUIRED.test(relationField.documentation || '')
+          isRequired({ field: relationField }) ||
+          isAnnotatedWith(relationField, DTO_RELATION_REQUIRED)
         );
       });
 
-      isNullable = !isAnyRelationRequired;
+      overrides.isNullable = !isAnyRelationRequired;
     }
 
-    return [
-      ...result,
-      {
-        kind,
-        name,
-        type,
-        isRequired,
-        isList,
-        isNullable,
-        documentation,
-      },
-    ];
+    return [...result, mapDMMFToParsedField(field, overrides)];
   }, [] as ParsedField[]);
 
   return filteredFields;

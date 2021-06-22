@@ -17,7 +17,6 @@ import {
   DTO_RELATION_CAN_CRAEATE_ON_UPDATE,
   DTO_UPDATE_HIDDEN,
   DTO_UPDATE_OPTIONAL,
-  DTO_CREATE_OPTIONAL,
 } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
