@@ -17,9 +17,13 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"{src,test}/**/*.ts\" --fix"
+    "build": "tsc --project tsconfig.build.json",
+    "format": "prettier --write \"{src,test}/**/*.{js,ts}\"",
+    "prelint": "npm run format -- --loglevel error",
+    "lint": "eslint \"{src,test}/**/*.{js,ts}\" --fix",
+    "pretest": "npm run lint",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -40,8 +44,11 @@
   "dependencies": {
     "@prisma/generator-helper": "^2.25.0",
     "@prisma/sdk": "^2.25.0",
+    "@types/jest": "^26.0.23",
     "case": "^1.6.3",
-    "make-dir": "^3.1.0"
+    "jest": "^27.0.5",
+    "make-dir": "^3.1.0",
+    "ts-jest": "^27.0.3"
   },
   "devDependencies": {
     "@types/node": "^15.12.4",

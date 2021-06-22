@@ -10,5 +10,9 @@
     "target": "es2020",
     "typeRoots": ["./src/@types", "./node_modules/@types"]
   },
-  "exclude": ["example", "generated", "dist"]
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "dist",
+  ]
 }
