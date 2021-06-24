@@ -1,4 +1,4 @@
-import { ParsedField } from './types';
+import { ImportStatementParams, ParsedField } from './types';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
   String: 'string',
@@ -49,10 +49,38 @@ export const each = <T = any>(
   joinWith = '',
 ) => arr.map(fn).join(joinWith);
 
-export const importStatement = (names: string[], from: string) =>
-  `import { ${names} } from '${from}';\n`;
+export const importStatement = (input: ImportStatementParams) => {
+  const { from, destruct = [], default: defaultExport } = input;
+  const fragments = ['import'];
+  if (defaultExport) {
+    if (typeof defaultExport === 'string') {
+      fragments.push(defaultExport);
+    } else {
+      fragments.push(`* as ${defaultExport['*']}`);
+    }
+  }
+  if (destruct.length) {
+    if (defaultExport) {
+      fragments.push(',');
+    }
+    fragments.push(
+      `{${destruct.flatMap((item) => {
+        if (typeof item === 'string') return item;
+        return Object.entries(item).map(([key, value]) => `${key} as ${value}`);
+      })}}`,
+    );
+  }
+
+  fragments.push(`from ${from}`);
+
+  return fragments.join(' ');
+};
+
+export const importStatements = (items: ImportStatementParams[]) =>
+  `${(each(items, importStatement), '\n')}`;
 
 interface MakeHelpersParam {
+  connectDtoPrefix: string;
   createDtoPrefix: string;
   updateDtoPrefix: string;
   dtoSuffix: string;
@@ -62,6 +90,7 @@ interface MakeHelpersParam {
   transformFileNameCase?: (item: string) => string;
 }
 export const makeHelpers = ({
+  connectDtoPrefix,
   createDtoPrefix,
   updateDtoPrefix,
   dtoSuffix,
@@ -70,35 +99,36 @@ export const makeHelpers = ({
   transformClassNameCase = echo,
   transformFileNameCase = echo,
 }: MakeHelpersParam) => {
-  const entityName = (name: string) => `${entityPrefix}${name}${entitySuffix}`;
+  const className = (name: string, prefix = '', suffix = '') =>
+    `${prefix}${transformClassNameCase(name)}${suffix}`;
+  const fileName = (
+    name: string,
+    prefix = '',
+    suffix = '',
+    withExtension = false,
+  ) =>
+    `${prefix}${transformFileNameCase(name)}${suffix}${when(
+      withExtension,
+      '.ts',
+    )}`;
+
+  const entityName = (name: string) =>
+    className(name, entityPrefix, entitySuffix);
+  const connectDtoName = (name: string) =>
+    className(name, connectDtoPrefix, dtoSuffix);
   const createDtoName = (name: string) =>
-    `${createDtoPrefix}${name}${dtoSuffix}`;
+    className(name, createDtoPrefix, dtoSuffix);
   const updateDtoName = (name: string) =>
-    `${updateDtoPrefix}${name}${dtoSuffix}`;
+    className(name, updateDtoPrefix, dtoSuffix);
 
-  const importEntity = (name: string) =>
-    importStatement(
-      [name].map(entityName),
-      `./${transformFileNameCase(name)}.entity`,
-    );
-  const importEntities = (names: string[]) =>
-    each(names, (name) => importEntity(name));
+  const connectDtoFilename = (name: string, withExtension = false) =>
+    fileName(name, 'connect-', '.dto', withExtension);
 
-  const importCreateDto = (name: string) =>
-    importStatement(
-      [name].map(createDtoName),
-      `./create-${transformFileNameCase(name)}.dto`,
-    );
-  const importCreateDtos = (names: string[]) =>
-    each(names, (name) => importCreateDto(name));
+  const createDtoFilename = (name: string, withExtension = false) =>
+    fileName(name, 'create-', '.dto', withExtension);
 
-  const importUpdateDto = (name: string) =>
-    importStatement(
-      [name].map(updateDtoName),
-      `./update-${transformFileNameCase(name)}.dto`,
-    );
-  const importUpdateDtos = (names: string[]) =>
-    each(names, (name) => importUpdateDto(name));
+  const updateDtoFilename = (name: string, withExtension = false) =>
+    fileName(name, 'update-', '.dto', withExtension);
 
   const fieldType = (field: ParsedField, toInputType = false) =>
     `${
@@ -139,11 +169,12 @@ export const makeHelpers = ({
   const fieldsToEntityProps = (fields: ParsedField[]) =>
     `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
 
-  const apiExtraModels = (modelNames: string[]) =>
-    `@ApiExtraModels(${modelNames.map(entityName)})`;
+  const apiExtraModels = (names: string[]) =>
+    `@ApiExtraModels(${names.map(entityName)})`;
 
   return {
     config: {
+      connectDtoPrefix,
       createDtoPrefix,
       updateDtoPrefix,
       dtoSuffix,
@@ -152,8 +183,12 @@ export const makeHelpers = ({
     },
     apiExtraModels,
     entityName,
+    connectDtoName,
     createDtoName,
     updateDtoName,
+    connectDtoFilename,
+    createDtoFilename,
+    updateDtoFilename,
     each,
     echo,
     fieldsToDtoProps,
@@ -163,10 +198,8 @@ export const makeHelpers = ({
     fieldType,
     for: each,
     if: when,
-    importEntities,
-    importCreateDtos,
-    importUpdateDtos,
     importStatement,
+    importStatements,
     transformClassNameCase,
     transformFileNameCase,
     unless,

@@ -20,3 +20,36 @@ export interface ExtraModel {
   preAndPostfixedName: string;
   isLocal?: boolean;
 }
+
+export interface ImportStatementParams {
+  from: string;
+  /**
+   * imports default export from `from`.
+   * use `string` to just get the default export and `{'*': localName`} for all exports (e.g. `import * as localName from 'baz'`)
+   */
+  default?: string | { '*': string };
+  /**
+   * imports named exports from `from`.
+   * use `string` to keep exported name and `{exportedName: localName`} for renaming (e.g. `import { foo as bar } from 'baz'`)
+   */
+  destruct?: (string | Record<string, string>)[];
+}
+
+export interface DtoParams {
+  model: DMMF.Model;
+  fields: ParsedField[];
+}
+
+export interface CreateDtoParams extends DtoParams {
+  // should include all Enums, ExtraModels, ConnectDTOs and CreateDTOs for related models
+  imports: ImportStatementParams[];
+  extraClasses: string[];
+  apiExtraModels: string[];
+}
+
+export interface UpdateDtoParams extends DtoParams {
+  // should include all Enums, ExtraModels, ConnectDTOs and UpdateDTOs for related models
+  imports: ImportStatementParams[];
+  extraClasses: string[];
+  apiExtraModels: string[];
+}
