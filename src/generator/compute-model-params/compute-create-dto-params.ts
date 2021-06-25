@@ -4,7 +4,7 @@ import {
   DTO_RELATION_CAN_CRAEATE_ON_CREATE,
   DTO_RELATION_MODIFIERS_ON_CREATE,
   DTO_RELATION_REQUIRED,
-} from './annotations';
+} from '../annotations';
 import {
   isAnnotatedWith,
   isAnnotatedWithOneOf,
@@ -13,22 +13,22 @@ import {
   isRelation,
   isRequiredWithDefaultValue,
   isUpdatedAt,
-} from './field-classifiers';
+} from '../field-classifiers';
 import {
   concatIntoArray,
   generateRelationInput,
   getRelationScalars,
   makeImportsFromPrismaClient,
   mapDMMFToParsedField,
-} from './helpers';
+} from '../helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
-import type { TemplateHelpers } from './template-helpers';
+import type { TemplateHelpers } from '../template-helpers';
 import type {
   CreateDtoParams,
   ImportStatementParams,
   ParsedField,
-} from './types';
+} from '../types';
 
 interface ComputeCreateDtoParamsParam {
   model: DMMF.Model;
@@ -40,16 +40,12 @@ export const computeCreateDtoParams = ({
   allModels,
   templateHelpers,
 }: ComputeCreateDtoParamsParam): CreateDtoParams => {
-  const imports: ImportStatementParams[] = [
-    makeImportsFromPrismaClient(model),
-    { from: '@nestjs/swagger', destruct: ['ApiExtraModels'] },
-  ];
+  const imports: ImportStatementParams[] = [];
+  const apiExtraModels: string[] = [];
+  const extraClasses: string[] = [];
 
   const relationScalarFields = getRelationScalars(model.fields);
   const relationScalarFieldNames = Object.keys(relationScalarFields);
-
-  const extraClasses: string[] = [];
-  const apiExtraModels: string[] = [];
 
   const fields = model.fields.reduce((result, field) => {
     const { name } = field;
@@ -100,6 +96,12 @@ export const computeCreateDtoParams = ({
 
     return [...result, mapDMMFToParsedField(field, overrides)];
   }, [] as ParsedField[]);
+
+  if (apiExtraModels.length)
+    imports.unshift({ from: '@nestjs/swagger', destruct: ['ApiExtraModels'] });
+
+  const importPrismaClient = makeImportsFromPrismaClient(model);
+  if (importPrismaClient) imports.unshift(importPrismaClient);
 
   return { model, fields, imports, extraClasses, apiExtraModels };
 };

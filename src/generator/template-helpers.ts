@@ -71,13 +71,13 @@ export const importStatement = (input: ImportStatementParams) => {
     );
   }
 
-  fragments.push(`from ${from}`);
+  fragments.push(`from '${from}'`);
 
   return fragments.join(' ');
 };
 
 export const importStatements = (items: ImportStatementParams[]) =>
-  `${(each(items, importStatement), '\n')}`;
+  `${each(items, importStatement, '\n')}`;
 
 interface MakeHelpersParam {
   connectDtoPrefix: string;
@@ -129,6 +129,9 @@ export const makeHelpers = ({
 
   const updateDtoFilename = (name: string, withExtension = false) =>
     fileName(name, 'update-', '.dto', withExtension);
+
+  const entityFilename = (name: string, withExtension = false) =>
+    fileName(name, undefined, '.entity', withExtension);
 
   const fieldType = (field: ParsedField, toInputType = false) =>
     `${
@@ -189,6 +192,7 @@ export const makeHelpers = ({
     connectDtoFilename,
     createDtoFilename,
     updateDtoFilename,
+    entityFilename,
     each,
     echo,
     fieldsToDtoProps,

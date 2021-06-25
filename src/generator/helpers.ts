@@ -16,13 +16,17 @@ export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
 
 export const makeImportsFromPrismaClient = (
   model: DMMF.Model,
-): ImportStatementParams => {
+): ImportStatementParams | null => {
   const enumsToImport = uniq(
     model.fields.filter(({ kind }) => kind === 'enum').map(({ type }) => type),
   );
   const importPrisma = model.fields
     .filter(({ kind }) => kind === 'scalar')
     .some(({ type }) => scalarToTS(type).includes('Prisma'));
+
+  if (!enumsToImport.length || importPrisma) {
+    return null;
+  }
 
   return {
     from: '@prisma/client',

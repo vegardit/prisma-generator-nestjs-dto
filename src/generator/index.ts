@@ -4,15 +4,20 @@ import {
 } from 'case';
 import { logger } from '@prisma/sdk';
 import { makeHelpers } from './template-helpers';
+import { computeModelParams } from './compute-model-params';
+import { generateConnectDto } from './generate-connect-dto';
 import { generateCreateDto } from './generate-create-dto';
 import { generateUpdateDto } from './generate-update-dto';
 import { generateEntity } from './generate-entity';
+import { DTO_IGNORE_MODEL } from './annotations';
+import { isAnnotatedWith } from './field-classifiers';
 
 import type { DMMF } from '@prisma/generator-helper';
 
 interface RunParam {
   dmmf: DMMF.Document;
   exportRelationModifierClasses: boolean;
+  connectDtoPrefix: string;
   createDtoPrefix: string;
   updateDtoPrefix: string;
   dtoSuffix: string;
@@ -29,15 +34,33 @@ export const run = ({ dmmf, ...options }: RunParam) => {
   });
   const allModels = dmmf.datamodel.models;
 
-  const modelFiles = allModels.map((model) => {
+  const filteredModels = allModels.filter(
+    (model) => !isAnnotatedWith(model, DTO_IGNORE_MODEL),
+  );
+
+  const modelFiles = filteredModels.map((model) => {
     logger.info(`Processing Model ${model.name}`);
+
+    const modelParams = computeModelParams({
+      model,
+      allModels: filteredModels,
+      templateHelpers,
+    });
+
+    // generate connect-model.dto.ts
+    const connectDto = {
+      fileName: templateHelpers.connectDtoFilename(model.name, true),
+      content: generateConnectDto({
+        ...modelParams.connect,
+        templateHelpers,
+      }),
+    };
 
     // generate create-model.dto.ts
     const createDto = {
-      fileName: `create-${transformFileNameCase(model.name)}.dto.ts`,
+      fileName: templateHelpers.createDtoFilename(model.name, true),
       content: generateCreateDto({
-        model,
-        allModels,
+        ...modelParams.create,
         exportRelationModifierClasses,
         templateHelpers,
       }),
@@ -46,10 +69,9 @@ export const run = ({ dmmf, ...options }: RunParam) => {
 
     // generate update-model.dto.ts
     const updateDto = {
-      fileName: `update-${transformFileNameCase(model.name)}.dto.ts`,
+      fileName: templateHelpers.updateDtoFilename(model.name, true),
       content: generateUpdateDto({
-        model,
-        allModels,
+        ...modelParams.update,
         exportRelationModifierClasses,
         templateHelpers,
       }),
@@ -58,15 +80,15 @@ export const run = ({ dmmf, ...options }: RunParam) => {
 
     // generate model.entity.ts
     const entity = {
-      fileName: `${transformFileNameCase(model.name)}.entity.ts`,
+      fileName: templateHelpers.entityFilename(model.name, true),
       content: generateEntity({
-        model,
+        ...modelParams.entity,
         templateHelpers,
       }),
     };
     // TODO generate model.struct.ts
 
-    return [createDto, updateDto, entity];
+    return [connectDto, createDto, updateDto, entity];
   });
 
   return [...modelFiles].flat();

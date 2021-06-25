@@ -38,18 +38,29 @@ export interface ImportStatementParams {
 export interface DtoParams {
   model: DMMF.Model;
   fields: ParsedField[];
-}
-
-export interface CreateDtoParams extends DtoParams {
   // should include all Enums, ExtraModels, ConnectDTOs and CreateDTOs for related models
   imports: ImportStatementParams[];
+}
+
+export type ConnectDtoParams = Omit<DtoParams, 'imports'>;
+
+export interface CreateDtoParams extends DtoParams {
   extraClasses: string[];
   apiExtraModels: string[];
 }
 
 export interface UpdateDtoParams extends DtoParams {
-  // should include all Enums, ExtraModels, ConnectDTOs and UpdateDTOs for related models
-  imports: ImportStatementParams[];
   extraClasses: string[];
   apiExtraModels: string[];
+}
+
+export interface EntityParams extends DtoParams {
+  apiExtraModels: string[];
+}
+
+export interface ModelParams {
+  connect: ConnectDtoParams;
+  create: CreateDtoParams;
+  update: UpdateDtoParams;
+  entity: EntityParams;
 }

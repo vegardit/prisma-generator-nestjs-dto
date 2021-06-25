@@ -24,6 +24,7 @@ export const generate = (options: GeneratorOptions) => {
   const output = parseEnvValue(options.generator.output!);
 
   const {
+    connectDtoPrefix = 'Connect',
     createDtoPrefix = 'Create',
     updateDtoPrefix = 'Update',
     dtoSuffix = 'Dto',
@@ -39,6 +40,7 @@ export const generate = (options: GeneratorOptions) => {
   const results = run({
     dmmf: options.dmmf,
     exportRelationModifierClasses,
+    connectDtoPrefix,
     createDtoPrefix,
     updateDtoPrefix,
     dtoSuffix,

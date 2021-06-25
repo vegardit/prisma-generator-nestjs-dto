@@ -1,7 +1,7 @@
 import type { TemplateHelpers } from './template-helpers';
-import type { DtoParams } from './types';
+import type { ConnectDtoParams } from './types';
 
-interface GenerateConnectDtoParam extends DtoParams {
+interface GenerateConnectDtoParam extends ConnectDtoParams {
   templateHelpers: TemplateHelpers;
 }
 export const generateConnectDto = ({
