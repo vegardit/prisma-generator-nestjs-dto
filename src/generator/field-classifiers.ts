@@ -2,18 +2,18 @@ import { DTO_READ_ONLY } from './annotations';
 import type { DMMF } from '@prisma/generator-helper';
 
 export const isAnnotatedWith = (
-  field: DMMF.Field,
+  instance: DMMF.Field | DMMF.Model,
   annotation: RegExp,
 ): boolean => {
-  const { documentation = '' } = field;
+  const { documentation = '' } = instance;
   return annotation.test(documentation);
 };
 
 export const isAnnotatedWithOneOf = (
-  field: DMMF.Field,
+  instance: DMMF.Field | DMMF.Model,
   annotations: RegExp[],
 ): boolean =>
-  annotations.some((annotation) => isAnnotatedWith(field, annotation));
+  annotations.some((annotation) => isAnnotatedWith(instance, annotation));
 
 // Field properties
 // isGenerated, !meaning unknown - assuming this means that the field itself is generated, not the value
@@ -35,38 +35,34 @@ export const isAnnotatedWithOneOf = (
 // relationToFields,
 // relationOnDelete,
 
-interface FieldClassifierParam {
-  field: DMMF.Field;
-}
-
-export const isId = ({ field }: FieldClassifierParam) => {
+export const isId = (field: DMMF.Field): boolean => {
   return field.isId;
 };
 
-export const isRequired = ({ field }: FieldClassifierParam) => {
+export const isRequired = (field: DMMF.Field): boolean => {
   return field.isRequired;
 };
 
-export const isScalar = ({ field }: FieldClassifierParam) => {
+export const isScalar = (field: DMMF.Field): boolean => {
   return field.kind === 'scalar';
 };
 
-export const hasDefaultValue = ({ field }: FieldClassifierParam) => {
+export const hasDefaultValue = (field: DMMF.Field): boolean => {
   return field.hasDefaultValue;
 };
 
-export const isUnique = ({ field }: FieldClassifierParam) => {
+export const isUnique = (field: DMMF.Field): boolean => {
   return field.isUnique;
 };
 
-export const isRelation = ({ field }: FieldClassifierParam) => {
+export const isRelation = (field: DMMF.Field): boolean => {
   const { kind /*, relationName */ } = field;
   // indicates a `relation` field
   return kind === 'object' /* && relationName */;
 };
 
-export const isIdWithDefaultValue = (param: FieldClassifierParam) =>
-  isId(param) && hasDefaultValue(param);
+export const isIdWithDefaultValue = (field: DMMF.Field): boolean =>
+  isId(field) && hasDefaultValue(field);
 
 /**
  * checks if a DMMF.Field either has `isReadOnly` property or is annotated with
@@ -77,10 +73,10 @@ export const isIdWithDefaultValue = (param: FieldClassifierParam) =>
  * @param {FieldClassifierParam} param
  * @returns {boolean}
  */
-export const isReadOnly = ({ field }: FieldClassifierParam) =>
+export const isReadOnly = (field: DMMF.Field): boolean =>
   field.isReadOnly || isAnnotatedWith(field, DTO_READ_ONLY);
 
-export const isUpdatedAt = ({ field }: FieldClassifierParam) => {
+export const isUpdatedAt = (field: DMMF.Field): boolean => {
   return field.isUpdatedAt;
 };
 
@@ -96,5 +92,5 @@ export const isUpdatedAt = ({ field }: FieldClassifierParam) => {
  *  }
  *  ```
  */
-export const isRequiredWithDefaultValue = (param: FieldClassifierParam) =>
-  isRequired(param) && hasDefaultValue(param);
+export const isRequiredWithDefaultValue = (field: DMMF.Field): boolean =>
+  isRequired(field) && hasDefaultValue(field);

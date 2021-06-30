@@ -1,5 +1,4 @@
-dist
-generated
 node_modules
+coverage
+dist
 .env
-private-example

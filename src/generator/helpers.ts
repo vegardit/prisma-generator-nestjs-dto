@@ -1,13 +1,40 @@
+import path from 'path';
 import {
   isAnnotatedWith,
   isId,
   isRelation,
   isUnique,
 } from './field-classifiers';
+import { scalarToTS } from './template-helpers';
+import { DTO_RELATION_REQUIRED } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
-import type { ExtraModel, ParsedField } from './types';
+import type { ImportStatementParams, Model, ParsedField } from './types';
+
+export const uniq = <T = any>(input: T[]): T[] => Array.from(new Set(input));
+export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
+  source.forEach((item) => target.push(item));
+
+export const makeImportsFromPrismaClient = (
+  model: DMMF.Model,
+): ImportStatementParams | null => {
+  const enumsToImport = uniq(
+    model.fields.filter(({ kind }) => kind === 'enum').map(({ type }) => type),
+  );
+  const importPrisma = model.fields
+    .filter(({ kind }) => kind === 'scalar')
+    .some(({ type }) => scalarToTS(type).includes('Prisma'));
+
+  if (!enumsToImport.length || importPrisma) {
+    return null;
+  }
+
+  return {
+    from: '@prisma/client',
+    destruct: importPrisma ? ['Prisma', ...enumsToImport] : enumsToImport,
+  };
+};
 
 export const mapDMMFToParsedField = (
   field: DMMF.Field,
@@ -23,6 +50,7 @@ export const getRelationScalars = (
   const scalars = fields.flatMap(
     ({ relationFromFields = [] }) => relationFromFields,
   );
+
   return scalars.reduce(
     (result, scalar) => ({
       ...result,
@@ -46,9 +74,9 @@ export const getRelationConnectInputFields = ({
 }: GetRelationConnectInputFieldsParam): Set<DMMF.Field> => {
   const { name, type, relationToFields = [] } = field;
 
-  if (!isRelation({ field })) {
+  if (!isRelation(field)) {
     throw new Error(
-      `Can not generate RelationConnectInputClass for field '${name}'. Not a relation field.`,
+      `Can not resolve RelationConnectInputFields for field '${name}'. Not a relation field.`,
     );
   }
 
@@ -58,13 +86,13 @@ export const getRelationConnectInputFields = ({
 
   if (!relatedModel) {
     throw new Error(
-      `Can not generate RelationConnectInputClass for field '${name}'. Related model '${type}' unknown.`,
+      `Can not resolve RelationConnectInputFields for field '${name}'. Related model '${type}' unknown.`,
     );
   }
 
   if (!relationToFields.length) {
     throw new Error(
-      `Can not generate RelationConnectInputClass for field '${name}'. Foreign keys are unknown.`,
+      `Can not resolve RelationConnectInputFields for field '${name}'. Foreign keys are unknown.`,
     );
   }
 
@@ -82,18 +110,12 @@ export const getRelationConnectInputFields = ({
   });
 
   const idFields = relatedModel.fields.filter((relatedModelField) =>
-    isId({ field: relatedModelField }),
+    isId(relatedModelField),
   );
 
   const uniqueFields = relatedModel.fields.filter((relatedModelField) =>
-    isUnique({ field: relatedModelField }),
+    isUnique(relatedModelField),
   );
-
-  // const requiredScalarFields = relatedModel.fields.find(
-  //   (relatedModelField) =>
-  //     isScalar({ field: relatedModelField }) &&
-  //     isRequired({ field: relatedModelField }),
-  // );
 
   const foreignFields = new Set<DMMF.Field>([
     ...foreignKeyFields,
@@ -104,10 +126,10 @@ export const getRelationConnectInputFields = ({
   return foreignFields;
 };
 
-interface GenerateRelationInputTypeParam {
+interface GenerateRelationInputParam {
   field: DMMF.Field;
-  model: DMMF.Model;
-  allModels: DMMF.Model[];
+  model: Model;
+  allModels: Model[];
   templateHelpers: TemplateHelpers;
   preAndSuffixClassName:
     | TemplateHelpers['createDtoName']
@@ -115,7 +137,7 @@ interface GenerateRelationInputTypeParam {
   canCreateAnnotation: RegExp;
   canConnectAnnotation: RegExp;
 }
-export const generateRelationInputType = ({
+export const generateRelationInput = ({
   field,
   model,
   allModels,
@@ -123,49 +145,71 @@ export const generateRelationInputType = ({
   preAndSuffixClassName,
   canCreateAnnotation,
   canConnectAnnotation,
-}: GenerateRelationInputTypeParam) => {
-  const relationInputClassProps: Array<Pick<ParsedField, 'name' | 'type'>> = [];
+}: GenerateRelationInputParam) => {
+  const relationInputClassProps: Array<
+    Pick<ParsedField, 'name' | 'type'> &
+      Partial<Pick<ParsedField, 'isRequired'>>
+  > = [];
 
-  const extraModels: ExtraModel[] = [];
+  const imports: ImportStatementParams[] = [];
+  const apiExtraModels: string[] = [];
   const generatedClasses: string[] = [];
 
   if (isAnnotatedWith(field, canCreateAnnotation)) {
-    const originalName = field.type;
-    const preAndPostfixedName = t.createDtoName(originalName);
+    const preAndPostfixedName = t.createDtoName(field.type);
+    apiExtraModels.push(preAndPostfixedName);
+
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
+
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
+
+    imports.push({
+      from: path.relative(
+        model.output.dto,
+        path.join(
+          modelToImportFrom.output.dto,
+          `${t.createDtoFilename(field.type)}`,
+        ),
+      ),
+      destruct: [preAndPostfixedName],
+    });
+
     relationInputClassProps.push({
       name: 'create',
       type: preAndPostfixedName,
     });
-    extraModels.push({ originalName, preAndPostfixedName });
   }
 
   if (isAnnotatedWith(field, canConnectAnnotation)) {
-    const connectInputFields = getRelationConnectInputFields({
-      field,
-      allModels,
+    const preAndPostfixedName = t.connectDtoName(field.type);
+    apiExtraModels.push(preAndPostfixedName);
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
+
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
+
+    imports.push({
+      from: path.relative(
+        model.output.dto,
+        path.join(
+          modelToImportFrom.output.dto,
+          `${t.connectDtoFilename(field.type)}`,
+        ),
+      ),
+      destruct: [preAndPostfixedName],
     });
-
-    const originalName = `${t.transformClassNameCase(
-      model.name,
-    )}${t.transformClassNameCase(field.name)}RelationConnectInput`;
-
-    const preAndPostfixedName = preAndSuffixClassName(originalName);
 
     relationInputClassProps.push({
       name: 'connect',
       type: preAndPostfixedName,
+      isRequired:
+        field.isRequired || isAnnotatedWith(field, DTO_RELATION_REQUIRED),
     });
-
-    generatedClasses.push(`class ${preAndPostfixedName} {
-      ${t.fieldsToDtoProps(
-        Array.from(connectInputFields).map((inputField) =>
-          mapDMMFToParsedField(inputField),
-        ),
-        true,
-      )}
-    }`);
-
-    extraModels.push({ originalName, preAndPostfixedName, isLocal: true });
   }
 
   const originalInputClassName = `${t.transformClassNameCase(
@@ -180,19 +224,22 @@ export const generateRelationInputType = ({
       relationInputClassProps.map((inputField) => ({
         ...inputField,
         kind: 'relation-input',
-        isRequired: false,
+        isRequired:
+          relationInputClassProps.length > 1
+            ? false
+            : inputField.isRequired || false,
         isList: field.isList,
       })),
-      true,
       true,
     )}
   }`);
 
-  extraModels.push({
-    originalName: originalInputClassName,
-    preAndPostfixedName: preAndPostfixedInputClassName,
-    isLocal: true,
-  });
+  apiExtraModels.push(preAndPostfixedInputClassName);
 
-  return { type: preAndPostfixedInputClassName, extraModels, generatedClasses };
+  return {
+    type: preAndPostfixedInputClassName,
+    imports,
+    generatedClasses,
+    apiExtraModels,
+  };
 };
