@@ -137,7 +137,7 @@ model Post {
   import { ConnectTagDto } from '../../tag/dto/connect-tag.dto';
 
   export class CreateQuestionCategoryRelationInputDto {
-    connect?: ConnectCategoryDto;
+    connect: ConnectCategoryDto;
   }
   export class CreateQuestionTagsRelationInputDto {
     create?: CreateTagDto[];
