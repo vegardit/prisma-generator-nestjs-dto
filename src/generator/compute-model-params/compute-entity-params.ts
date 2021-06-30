@@ -1,3 +1,4 @@
+import path from 'path';
 import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from '../annotations';
 import { isAnnotatedWith, isRelation, isRequired } from '../field-classifiers';
 import {
@@ -8,6 +9,7 @@ import {
 
 import type { DMMF } from '@prisma/generator-helper';
 import type {
+  Model,
   EntityParams,
   ImportStatementParams,
   ParsedField,
@@ -15,11 +17,13 @@ import type {
 import type { TemplateHelpers } from '../template-helpers';
 
 interface ComputeEntityParamsParam {
-  model: DMMF.Model;
+  model: Model;
+  allModels: Model[];
   templateHelpers: TemplateHelpers;
 }
 export const computeEntityParams = ({
   model,
+  allModels,
   templateHelpers,
 }: ComputeEntityParamsParam): EntityParams => {
   const imports: ImportStatementParams[] = [];
@@ -50,8 +54,23 @@ export const computeEntityParams = ({
 
       // don't try to import the class we're preparing params for
       if (field.type !== model.name) {
+        const modelToImportFrom = allModels.find(
+          ({ name }) => name === field.type,
+        );
+
+        if (!modelToImportFrom)
+          throw new Error(
+            `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+          );
+
         const importName = templateHelpers.entityName(field.type);
-        const importFrom = `./${templateHelpers.entityFilename(field.type)}`;
+        const importFrom = path.relative(
+          model.output.dto,
+          path.join(
+            modelToImportFrom.output.entity,
+            `${templateHelpers.entityFilename(field.type)}`,
+          ),
+        );
         // don't double-import the same thing
         // TODO should check for match on any import name ( - no matter from where)
         if (

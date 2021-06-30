@@ -1,5 +1,12 @@
 import { DMMF } from '@prisma/generator-helper';
 
+export interface Model extends DMMF.Model {
+  output: {
+    dto: string;
+    entity: string;
+  };
+}
+
 export interface ParsedField {
   kind: DMMF.FieldKind | 'relation-input';
   name: string;
@@ -30,7 +37,10 @@ export interface ImportStatementParams {
   default?: string | { '*': string };
   /**
    * imports named exports from `from`.
-   * use `string` to keep exported name and `{exportedName: localName`} for renaming (e.g. `import { foo as bar } from 'baz'`)
+   * use `string` to keep exported name and `{exportedName: localName}` for renaming (e.g. `import { foo as bar } from 'baz'`)
+   *
+   * @example `foo`
+   * @example `{exportedName: localName}`
    */
   destruct?: (string | Record<string, string>)[];
 }

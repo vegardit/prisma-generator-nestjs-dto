@@ -1,3 +1,4 @@
+import path from 'path';
 import {
   isAnnotatedWith,
   isId,
@@ -8,7 +9,7 @@ import { scalarToTS } from './template-helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
-import type { ImportStatementParams, ParsedField } from './types';
+import type { ImportStatementParams, Model, ParsedField } from './types';
 
 export const uniq = <T = any>(input: T[]): T[] => Array.from(new Set(input));
 export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
@@ -126,8 +127,8 @@ export const getRelationConnectInputFields = ({
 
 interface GenerateRelationInputParam {
   field: DMMF.Field;
-  model: DMMF.Model;
-  allModels: DMMF.Model[];
+  model: Model;
+  allModels: Model[];
   templateHelpers: TemplateHelpers;
   preAndSuffixClassName:
     | TemplateHelpers['createDtoName']
@@ -138,6 +139,7 @@ interface GenerateRelationInputParam {
 export const generateRelationInput = ({
   field,
   model,
+  allModels,
   templateHelpers: t,
   preAndSuffixClassName,
   canCreateAnnotation,
@@ -153,8 +155,21 @@ export const generateRelationInput = ({
     const preAndPostfixedName = t.createDtoName(field.type);
     apiExtraModels.push(preAndPostfixedName);
 
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
+
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
+
     imports.push({
-      from: `./${t.createDtoFilename(field.type)}`,
+      from: path.relative(
+        model.output.dto,
+        path.join(
+          modelToImportFrom.output.dto,
+          `${t.createDtoFilename(field.type)}`,
+        ),
+      ),
       destruct: [preAndPostfixedName],
     });
 
@@ -167,10 +182,24 @@ export const generateRelationInput = ({
   if (isAnnotatedWith(field, canConnectAnnotation)) {
     const preAndPostfixedName = t.connectDtoName(field.type);
     apiExtraModels.push(preAndPostfixedName);
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
+
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
+
     imports.push({
-      from: `./${t.connectDtoFilename(field.type)}`,
+      from: path.relative(
+        model.output.dto,
+        path.join(
+          modelToImportFrom.output.dto,
+          `${t.connectDtoFilename(field.type)}`,
+        ),
+      ),
       destruct: [preAndPostfixedName],
     });
+
     relationInputClassProps.push({
       name: 'connect',
       type: preAndPostfixedName,
@@ -187,10 +216,10 @@ export const generateRelationInput = ({
   generatedClasses.push(`class ${preAndPostfixedInputClassName} {
     ${t.fieldsToDtoProps(
       relationInputClassProps.map((inputField) => ({
-        ...inputField,
-        kind: 'relation-input',
         isRequired: false,
         isList: field.isList,
+        ...inputField,
+        kind: 'relation-input',
       })),
       true,
     )}

@@ -4,12 +4,11 @@ import { computeCreateDtoParams } from './compute-create-dto-params';
 import { computeUpdateDtoParams } from './compute-update-dto-params';
 import { computeEntityParams } from './compute-entity-params';
 
-import type { DMMF } from '@prisma/generator-helper';
-import type { ModelParams } from '../types';
+import type { Model, ModelParams } from '../types';
 
 interface ComputeModelParamsParam {
-  model: DMMF.Model;
-  allModels: DMMF.Model[];
+  model: Model;
+  allModels: Model[];
   templateHelpers: TemplateHelpers;
 }
 export const computeModelParams = ({
@@ -19,10 +18,9 @@ export const computeModelParams = ({
 }: ComputeModelParamsParam): ModelParams => ({
   // TODO find out if model needs `ConnectDTO`
   connect: computeConnectDtoParams({ model }),
-  // ? should this be `allModels: models` instead
   create: computeCreateDtoParams({
     model,
-    allModels,
+    allModels, // ? should this be `allModels: models` instead
     templateHelpers,
   }),
 
@@ -31,5 +29,5 @@ export const computeModelParams = ({
     allModels,
     templateHelpers,
   }),
-  entity: computeEntityParams({ model, templateHelpers }),
+  entity: computeEntityParams({ model, allModels, templateHelpers }),
 });

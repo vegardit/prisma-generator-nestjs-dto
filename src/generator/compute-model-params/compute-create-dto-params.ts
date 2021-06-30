@@ -25,14 +25,15 @@ import {
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from '../template-helpers';
 import type {
+  Model,
   CreateDtoParams,
   ImportStatementParams,
   ParsedField,
 } from '../types';
 
 interface ComputeCreateDtoParamsParam {
-  model: DMMF.Model;
-  allModels: DMMF.Model[];
+  model: Model;
+  allModels: Model[];
   templateHelpers: TemplateHelpers;
 }
 export const computeCreateDtoParams = ({
