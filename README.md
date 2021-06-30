@@ -179,7 +179,7 @@ model Post {
   ```
 
   ```ts
-  // src/question.entities/question.entity.ts
+  // src/question/entities/question.entity.ts
   import { User } from '../../user/entities/user.entity';
   import { Category } from '../../category/entities/category.entity';
   import { Tag } from '../../tag/entities/tag.entity';
