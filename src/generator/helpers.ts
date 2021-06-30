@@ -6,6 +6,7 @@ import {
   isUnique,
 } from './field-classifiers';
 import { scalarToTS } from './template-helpers';
+import { DTO_RELATION_REQUIRED } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
@@ -145,7 +146,10 @@ export const generateRelationInput = ({
   canCreateAnnotation,
   canConnectAnnotation,
 }: GenerateRelationInputParam) => {
-  const relationInputClassProps: Array<Pick<ParsedField, 'name' | 'type'>> = [];
+  const relationInputClassProps: Array<
+    Pick<ParsedField, 'name' | 'type'> &
+      Partial<Pick<ParsedField, 'isRequired'>>
+  > = [];
 
   const imports: ImportStatementParams[] = [];
   const apiExtraModels: string[] = [];
@@ -203,6 +207,8 @@ export const generateRelationInput = ({
     relationInputClassProps.push({
       name: 'connect',
       type: preAndPostfixedName,
+      isRequired:
+        field.isRequired || isAnnotatedWith(field, DTO_RELATION_REQUIRED),
     });
   }
 
@@ -216,10 +222,13 @@ export const generateRelationInput = ({
   generatedClasses.push(`class ${preAndPostfixedInputClassName} {
     ${t.fieldsToDtoProps(
       relationInputClassProps.map((inputField) => ({
-        isRequired: false,
-        isList: field.isList,
         ...inputField,
         kind: 'relation-input',
+        isRequired:
+          relationInputClassProps.length > 1
+            ? false
+            : inputField.isRequired || false,
+        isList: field.isList,
       })),
       true,
     )}
