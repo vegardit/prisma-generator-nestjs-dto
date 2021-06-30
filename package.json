@@ -1,7 +1,7 @@
 {
   "name": "@vegardit/prisma-generator-nestjs-dto",
   "description": "Generates DTO and Entity classes from Prisma Schema for NestJS",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "license": "Apache-2.0",
   "author": {
     "name": "Benjamin Kroeger",
@@ -17,9 +17,13 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"{src,test}/**/*.ts\" --fix"
+    "build": "tsc --project tsconfig.build.json",
+    "format": "prettier --write \"{src,test}/**/*.{js,ts}\"",
+    "prelint": "npm run format -- --loglevel error",
+    "lint": "eslint \"{src,test}/**/*.{js,ts}\" --fix",
+    "pretest": "npm run lint",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -38,20 +42,23 @@
     "access": "public"
   },
   "dependencies": {
-    "@prisma/generator-helper": "^2.24.1",
-    "@prisma/sdk": "^2.24.1",
+    "@prisma/generator-helper": "^2.25.0",
+    "@prisma/sdk": "^2.25.0",
+    "@types/jest": "^26.0.23",
     "case": "^1.6.3",
-    "make-dir": "^3.1.0"
+    "jest": "^27.0.5",
+    "make-dir": "^3.1.0",
+    "ts-jest": "^27.0.3"
   },
   "devDependencies": {
-    "@types/node": "^15.12.2",
+    "@types/node": "^15.12.4",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^4.26.1",
-    "eslint": "^7.28.0",
+    "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "prettier": "^2.3.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.4"
   }
 }

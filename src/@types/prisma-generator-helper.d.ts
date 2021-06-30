@@ -73,7 +73,7 @@ declare module '@prisma/generator-helper' {
       hasDefaultValue: boolean;
       default?: FieldDefault | string | boolean | number;
       relationFromFields?: string[];
-      relationToFields?: any[];
+      relationToFields?: string[];
       relationOnDelete?: string;
       relationName?: string;
       documentation?: string;

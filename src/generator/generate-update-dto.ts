@@ -1,38 +1,29 @@
-import { filterAndMapFieldsForUpdateDto } from './helpers';
-
-import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
+import type { UpdateDtoParams } from './types';
 
-interface GenerateUpdateDtoParam {
-  model: DMMF.Model;
+interface GenerateUpdateDtoParam extends UpdateDtoParams {
+  exportRelationModifierClasses: boolean;
   templateHelpers: TemplateHelpers;
 }
 export const generateUpdateDto = ({
   model,
+  fields,
+  imports,
+  extraClasses,
+  apiExtraModels,
+  exportRelationModifierClasses,
   templateHelpers: t,
-}: GenerateUpdateDtoParam) => {
-  const enumsToImport = Array.from(
-    new Set(
-      model.fields
-        .filter(({ kind }) => kind === 'enum')
-        .map(({ type }) => type),
-    ),
-  );
+}: GenerateUpdateDtoParam) => `
+${t.importStatements(imports)}
 
-  const fieldsToInclude = filterAndMapFieldsForUpdateDto({
-    fields: model.fields,
-  });
-
-  const template = `
-${t.if(
-  enumsToImport.length,
-  `import { ${enumsToImport} } from '@prisma/client';`,
+${t.each(
+  extraClasses,
+  exportRelationModifierClasses ? (content) => `export ${content}` : t.echo,
+  '\n',
 )}
 
+${t.if(apiExtraModels.length, t.apiExtraModels(apiExtraModels))}
 export class ${t.updateDtoName(model.name)} {
-  ${t.fieldsToDtoProps(fieldsToInclude, true, true)}
+  ${t.fieldsToDtoProps(fields, true)}
 }
 `;
-
-  return template;
-};

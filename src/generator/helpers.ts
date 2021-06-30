@@ -1,37 +1,56 @@
+import path from 'path';
+import {
+  isAnnotatedWith,
+  isId,
+  isRelation,
+  isUnique,
+} from './field-classifiers';
+import { scalarToTS } from './template-helpers';
+import { DTO_RELATION_REQUIRED } from './annotations';
+
 import type { DMMF } from '@prisma/generator-helper';
-import type { ParsedField } from './types';
+import type { TemplateHelpers } from './template-helpers';
+import type { ImportStatementParams, Model, ParsedField } from './types';
 
-const DTO_READ_ONLY = /@DtoReadOnly/;
-const DTO_ENTITY_HIDDEN = /@DtoEntityHidden/;
-const DTO_CREATE_OPTIONAL = /@DtoCreateOptional/;
-const DTO_UPDATE_HIDDEN = /@DtoUpdateHidden/;
-const DTO_UPDATE_OPTIONAL = /@DtoUpdateOptional/;
-const DTO_RELATION_REQUIRED = /@DtoRelationRequired/;
+export const uniq = <T = any>(input: T[]): T[] => Array.from(new Set(input));
+export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
+  source.forEach((item) => target.push(item));
 
-// Field properties
-// isGenerated, !meaning unknown - assuming this means that the field itself is generated, not the value
-// isId,
-// isList,
-// isReadOnly, !no idea how this is set
-// isRequired, !seems to be `true` for 1-n relation
-// isUnique, !is not set for `isId` fields
-// isUpdatedAt, filled by prisma, should thus be readonly
-// kind, scalar, object (relation), enum, unsupported
-// name,
-// type,
-// dbNames, !meaning unknown
-// hasDefaultValue,
-// default: fieldDefault,
-// documentation = '',
-// relationName,
-// relationFromFields,
-// relationToFields,
-// relationOnDelete,
+export const makeImportsFromPrismaClient = (
+  model: DMMF.Model,
+): ImportStatementParams | null => {
+  const enumsToImport = uniq(
+    model.fields.filter(({ kind }) => kind === 'enum').map(({ type }) => type),
+  );
+  const importPrisma = model.fields
+    .filter(({ kind }) => kind === 'scalar')
+    .some(({ type }) => scalarToTS(type).includes('Prisma'));
 
-const getRelationScalars = (fields: DMMF.Field[]): Record<string, string[]> => {
+  if (!enumsToImport.length || importPrisma) {
+    return null;
+  }
+
+  return {
+    from: '@prisma/client',
+    destruct: importPrisma ? ['Prisma', ...enumsToImport] : enumsToImport,
+  };
+};
+
+export const mapDMMFToParsedField = (
+  field: DMMF.Field,
+  overrides: Partial<DMMF.Field> = {},
+): ParsedField => ({
+  ...field,
+  ...overrides,
+});
+
+export const getRelationScalars = (
+  fields: DMMF.Field[],
+): Record<string, string[]> => {
   const scalars = fields.flatMap(
     ({ relationFromFields = [] }) => relationFromFields,
   );
+
   return scalars.reduce(
     (result, scalar) => ({
       ...result,
@@ -45,205 +64,182 @@ const getRelationScalars = (fields: DMMF.Field[]): Record<string, string[]> => {
   );
 };
 
-interface FieldClassifierParam {
+interface GetRelationConnectInputFieldsParam {
   field: DMMF.Field;
+  allModels: DMMF.Model[];
 }
-interface WithRelationScalarFields {
-  relationScalarFields: Set<string>;
+export const getRelationConnectInputFields = ({
+  field,
+  allModels,
+}: GetRelationConnectInputFieldsParam): Set<DMMF.Field> => {
+  const { name, type, relationToFields = [] } = field;
+
+  if (!isRelation(field)) {
+    throw new Error(
+      `Can not resolve RelationConnectInputFields for field '${name}'. Not a relation field.`,
+    );
+  }
+
+  const relatedModel = allModels.find(
+    ({ name: modelName }) => modelName === type,
+  );
+
+  if (!relatedModel) {
+    throw new Error(
+      `Can not resolve RelationConnectInputFields for field '${name}'. Related model '${type}' unknown.`,
+    );
+  }
+
+  if (!relationToFields.length) {
+    throw new Error(
+      `Can not resolve RelationConnectInputFields for field '${name}'. Foreign keys are unknown.`,
+    );
+  }
+
+  const foreignKeyFields = relationToFields.map((relationToFieldName) => {
+    const relatedField = relatedModel.fields.find(
+      (relatedModelField) => relatedModelField.name === relationToFieldName,
+    );
+
+    if (!relatedField)
+      throw new Error(
+        `Can not find foreign key field '${relationToFieldName}' on model '${relatedModel.name}'`,
+      );
+
+    return relatedField;
+  });
+
+  const idFields = relatedModel.fields.filter((relatedModelField) =>
+    isId(relatedModelField),
+  );
+
+  const uniqueFields = relatedModel.fields.filter((relatedModelField) =>
+    isUnique(relatedModelField),
+  );
+
+  const foreignFields = new Set<DMMF.Field>([
+    ...foreignKeyFields,
+    ...idFields,
+    ...uniqueFields,
+  ]);
+
+  return foreignFields;
+};
+
+interface GenerateRelationInputParam {
+  field: DMMF.Field;
+  model: Model;
+  allModels: Model[];
+  templateHelpers: TemplateHelpers;
+  preAndSuffixClassName:
+    | TemplateHelpers['createDtoName']
+    | TemplateHelpers['updateDtoName'];
+  canCreateAnnotation: RegExp;
+  canConnectAnnotation: RegExp;
 }
+export const generateRelationInput = ({
+  field,
+  model,
+  allModels,
+  templateHelpers: t,
+  preAndSuffixClassName,
+  canCreateAnnotation,
+  canConnectAnnotation,
+}: GenerateRelationInputParam) => {
+  const relationInputClassProps: Array<
+    Pick<ParsedField, 'name' | 'type'> &
+      Partial<Pick<ParsedField, 'isRequired'>>
+  > = [];
 
-const isRelation = ({ field }: FieldClassifierParam) => {
-  const { kind /*, relationName */ } = field;
-  // indicates a `relation` field
-  return kind === 'object' /* && relationName */;
-};
+  const imports: ImportStatementParams[] = [];
+  const apiExtraModels: string[] = [];
+  const generatedClasses: string[] = [];
 
-const isIdWithDefaultValue = ({ field }: FieldClassifierParam) => {
-  const { isId, hasDefaultValue } = field;
-  return isId && hasDefaultValue;
-};
+  if (isAnnotatedWith(field, canCreateAnnotation)) {
+    const preAndPostfixedName = t.createDtoName(field.type);
+    apiExtraModels.push(preAndPostfixedName);
 
-/**
- * checks if a DMMF.Field either has `isReadOnly` property or is annotated with
- * `@DtoReadOnly` comment.
- *
- * **Note:** this also removes relation scalar fields as they are marked as `isReadOnly`
- *
- * @param {FieldClassifierParam} param
- * @returns {boolean}
- */
-const isReadOnly = ({ field }: FieldClassifierParam) => {
-  const { documentation = '' } = field;
-  return field.isReadOnly || DTO_READ_ONLY.test(documentation);
-};
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
 
-const isUpdatedAt = ({ field }: FieldClassifierParam) => {
-  return field.isUpdatedAt;
-};
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
 
-/**
- * for schema-required fields that fallback to a default value when empty.
- *
- * Think: `createdAt` timestamps
- *
- * @example
- * ```prisma
- *  model Post {
- *    createdAt   DateTime @default(now())
- *  }
- *  ```
- */
-const isRequiredWithDefault = ({
-  field: { isRequired, hasDefaultValue },
-}: FieldClassifierParam) => isRequired && hasDefaultValue;
+    imports.push({
+      from: path.relative(
+        model.output.dto,
+        path.join(
+          modelToImportFrom.output.dto,
+          `${t.createDtoFilename(field.type)}`,
+        ),
+      ),
+      destruct: [preAndPostfixedName],
+    });
 
-interface FilterFieldsForCreateDtoParam {
-  fields: DMMF.Field[];
-}
-export const filterAndMapFieldsForCreateDto = ({
-  fields,
-}: FilterFieldsForCreateDtoParam): ParsedField[] => {
-  const relationScalarFields = getRelationScalars(fields);
-  const relationScalarFieldNames = Object.keys(relationScalarFields);
+    relationInputClassProps.push({
+      name: 'create',
+      type: preAndPostfixedName,
+    });
+  }
 
-  const filteredFields = fields.reduce((result, field) => {
-    const { kind, name, type, documentation = '', isList } = field;
+  if (isAnnotatedWith(field, canConnectAnnotation)) {
+    const preAndPostfixedName = t.connectDtoName(field.type);
+    apiExtraModels.push(preAndPostfixedName);
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
 
-    if (isReadOnly({ field })) return result;
-    if (isRelation({ field })) return result;
-    if (relationScalarFieldNames.includes(name)) return result;
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
 
-    // fields annotated with @DtoReadOnly are filtered out before this
-    // so this safely allows to mark fields that are required in Prisma Schema
-    // as **not** required in CreateDTO
-    const isDtoOptional = DTO_CREATE_OPTIONAL.test(documentation);
+    imports.push({
+      from: path.relative(
+        model.output.dto,
+        path.join(
+          modelToImportFrom.output.dto,
+          `${t.connectDtoFilename(field.type)}`,
+        ),
+      ),
+      destruct: [preAndPostfixedName],
+    });
 
-    if (!isDtoOptional) {
-      if (isIdWithDefaultValue({ field })) return result;
-      if (isUpdatedAt({ field })) return result;
-      if (isRequiredWithDefault({ field })) return result;
-    }
+    relationInputClassProps.push({
+      name: 'connect',
+      type: preAndPostfixedName,
+      isRequired:
+        field.isRequired || isAnnotatedWith(field, DTO_RELATION_REQUIRED),
+    });
+  }
 
-    const isRequired = isDtoOptional ? false : field.isRequired;
+  const originalInputClassName = `${t.transformClassNameCase(
+    model.name,
+  )}${t.transformClassNameCase(field.name)}RelationInput`;
 
-    return [
-      ...result,
-      {
-        kind,
-        name,
-        type,
-        isRequired,
-        isList,
-        documentation,
-      },
-    ];
-  }, [] as ParsedField[]);
+  const preAndPostfixedInputClassName = preAndSuffixClassName(
+    originalInputClassName,
+  );
+  generatedClasses.push(`class ${preAndPostfixedInputClassName} {
+    ${t.fieldsToDtoProps(
+      relationInputClassProps.map((inputField) => ({
+        ...inputField,
+        kind: 'relation-input',
+        isRequired:
+          relationInputClassProps.length > 1
+            ? false
+            : inputField.isRequired || false,
+        isList: field.isList,
+      })),
+      true,
+    )}
+  }`);
 
-  return filteredFields;
-};
+  apiExtraModels.push(preAndPostfixedInputClassName);
 
-interface FilterFieldsForUpdateDtoParam {
-  fields: DMMF.Field[];
-}
-export const filterAndMapFieldsForUpdateDto = ({
-  fields,
-}: FilterFieldsForUpdateDtoParam): ParsedField[] => {
-  const relationScalarFields = getRelationScalars(fields);
-  const relationScalarFieldNames = Object.keys(relationScalarFields);
-
-  const filteredFields = fields.reduce((result, field) => {
-    const { kind, name, type, documentation = '', isId, isList } = field;
-
-    if (DTO_UPDATE_HIDDEN.test(documentation)) return result;
-
-    if (isReadOnly({ field })) return result;
-    if (isId) return result;
-    if (isRelation({ field })) return result;
-    if (relationScalarFieldNames.includes(name)) return result;
-
-    // fields annotated with @DtoReadOnly are filtered out before this
-    // so this safely allows to mark fields that are required in Prisma Schema
-    // as **not** required in CreateDTO
-    const isDtoOptional = DTO_UPDATE_OPTIONAL.test(documentation);
-
-    if (!isDtoOptional) {
-      if (isUpdatedAt({ field })) return result;
-    }
-
-    return [
-      ...result,
-      {
-        kind,
-        name,
-        type,
-        isRequired: false,
-        isList,
-        documentation,
-      },
-    ];
-  }, [] as ParsedField[]);
-
-  return filteredFields;
-};
-
-interface FilterFieldsForEntityParam {
-  fields: DMMF.Field[];
-}
-export const filterAndMapFieldsForEntity = ({
-  fields,
-}: FilterFieldsForEntityParam): ParsedField[] => {
-  const relationScalarFields = getRelationScalars(fields);
-  const relationScalarFieldNames = Object.keys(relationScalarFields);
-
-  const filteredFields = fields.reduce((result, field) => {
-    const { kind, name, type, documentation = '', isList } = field;
-    let isNullable = !field.isRequired;
-    let isRequired = true;
-
-    if (DTO_ENTITY_HIDDEN.test(documentation)) return result;
-
-    // relation fields are never required in an entity.
-    // they can however be `selected` and thus might optionally be included in the
-    // response from PrismaClient
-    if (isRelation({ field })) {
-      isRequired = false;
-      isNullable = field.isList
-        ? false
-        : field.isRequired
-        ? false
-        : !DTO_RELATION_REQUIRED.test(documentation);
-    }
-
-    if (relationScalarFieldNames.includes(name)) {
-      const { [name]: relationNames } = relationScalarFields;
-      const isAnyRelationRequired = relationNames.some((relationFieldName) => {
-        const relationField = fields.find(
-          (anyField) => anyField.name === relationFieldName,
-        );
-        if (!relationField) return false;
-
-        return (
-          relationField.isRequired ||
-          DTO_RELATION_REQUIRED.test(relationField.documentation || '')
-        );
-      });
-
-      isNullable = !isAnyRelationRequired;
-    }
-
-    return [
-      ...result,
-      {
-        kind,
-        name,
-        type,
-        isRequired,
-        isList,
-        isNullable,
-        documentation,
-      },
-    ];
-  }, [] as ParsedField[]);
-
-  return filteredFields;
+  return {
+    type: preAndPostfixedInputClassName,
+    imports,
+    generatedClasses,
+    apiExtraModels,
+  };
 };
