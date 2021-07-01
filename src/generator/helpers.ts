@@ -151,10 +151,7 @@ export const generateRelationInput = ({
   canCreateAnnotation,
   canConnectAnnotation,
 }: GenerateRelationInputParam) => {
-  const relationInputClassProps: Array<
-    Pick<ParsedField, 'name' | 'type'> &
-      Partial<Pick<ParsedField, 'isRequired'>>
-  > = [];
+  const relationInputClassProps: Array<Pick<ParsedField, 'name' | 'type'>> = [];
 
   const imports: ImportStatementParams[] = [];
   const apiExtraModels: string[] = [];
@@ -206,9 +203,13 @@ export const generateRelationInput = ({
     relationInputClassProps.push({
       name: 'connect',
       type: preAndPostfixedName,
-      isRequired:
-        field.isRequired || isAnnotatedWith(field, DTO_RELATION_REQUIRED),
     });
+  }
+
+  if (!relationInputClassProps.length) {
+    throw new Error(
+      `Can not find relation input props for '${model.name}.${field.name}'`,
+    );
   }
 
   const originalInputClassName = `${t.transformClassNameCase(
@@ -223,8 +224,7 @@ export const generateRelationInput = ({
       relationInputClassProps.map((inputField) => ({
         ...inputField,
         kind: 'relation-input',
-        isRequired:
-          inputField.isRequired || relationInputClassProps.length === 1,
+        isRequired: relationInputClassProps.length === 1,
         isList: field.isList,
       })),
       true,
