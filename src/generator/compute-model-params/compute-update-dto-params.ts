@@ -2,7 +2,6 @@ import {
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
   DTO_RELATION_CAN_CRAEATE_ON_UPDATE,
   DTO_RELATION_MODIFIERS_ON_UPDATE,
-  DTO_UPDATE_HIDDEN,
   DTO_UPDATE_OPTIONAL,
 } from '../annotations';
 import {
@@ -11,6 +10,7 @@ import {
   isId,
   isReadOnly,
   isRelation,
+  isRequiredWithDefaultValue,
   isUpdatedAt,
 } from '../field-classifiers';
 import {
@@ -51,10 +51,7 @@ export const computeUpdateDtoParams = ({
     const { name } = field;
     const overrides: Partial<DMMF.Field> = { isRequired: false };
 
-    if (isAnnotatedWith(field, DTO_UPDATE_HIDDEN)) return result;
-
     if (isReadOnly(field)) return result;
-    if (isId(field)) return result;
     if (isRelation(field)) {
       if (!isAnnotatedWithOneOf(field, DTO_RELATION_MODIFIERS_ON_UPDATE)) {
         return result;
@@ -84,7 +81,9 @@ export const computeUpdateDtoParams = ({
     const isDtoOptional = isAnnotatedWith(field, DTO_UPDATE_OPTIONAL);
 
     if (!isDtoOptional) {
+      if (isId(field)) return result;
       if (isUpdatedAt(field)) return result;
+      if (isRequiredWithDefaultValue(field)) return result;
     }
 
     return [...result, mapDMMFToParsedField(field, overrides)];
