@@ -126,6 +126,11 @@ export const getRelationConnectInputFields = ({
   return foreignFields;
 };
 
+const getRelativePath = (from: string, to: string) => {
+  const result = path.relative(from, to);
+  return result || '.';
+};
+
 interface GenerateRelationInputParam {
   field: DMMF.Field;
   model: Model;
@@ -167,13 +172,10 @@ export const generateRelationInput = ({
       );
 
     imports.push({
-      from: path.relative(
+      from: `${getRelativePath(
         model.output.dto,
-        path.join(
-          modelToImportFrom.output.dto,
-          `${t.createDtoFilename(field.type)}`,
-        ),
-      ),
+        modelToImportFrom.output.dto,
+      )}${path.sep}${t.createDtoFilename(field.type)}`,
       destruct: [preAndPostfixedName],
     });
 
@@ -194,13 +196,10 @@ export const generateRelationInput = ({
       );
 
     imports.push({
-      from: path.relative(
+      from: `${getRelativePath(
         model.output.dto,
-        path.join(
-          modelToImportFrom.output.dto,
-          `${t.connectDtoFilename(field.type)}`,
-        ),
-      ),
+        modelToImportFrom.output.dto,
+      )}${path.sep}${t.connectDtoFilename(field.type)}`,
       destruct: [preAndPostfixedName],
     });
 
@@ -225,9 +224,7 @@ export const generateRelationInput = ({
         ...inputField,
         kind: 'relation-input',
         isRequired:
-          relationInputClassProps.length > 1
-            ? false
-            : inputField.isRequired || false,
+          inputField.isRequired || relationInputClassProps.length === 1,
         isList: field.isList,
       })),
       true,
