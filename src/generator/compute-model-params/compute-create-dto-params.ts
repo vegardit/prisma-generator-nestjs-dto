@@ -73,7 +73,13 @@ export const computeCreateDtoParams = ({
       );
       if (isDtoRelationRequired) overrides.isRequired = true;
 
+      // list fields can not be required
+      // TODO maybe throw an error if `isDtoRelationRequired` and `isList`
+      if (field.isList) overrides.isRequired = false;
+
       overrides.type = relationInputType.type;
+      // since relation input field types are translated to something like { connect: Foo[] }, the field type itself is not a list anymore.
+      // You provide list input in the nested `connect` or `create` properties.
       overrides.isList = false;
       concatIntoArray(relationInputType.imports, imports);
       concatIntoArray(relationInputType.generatedClasses, extraClasses);
