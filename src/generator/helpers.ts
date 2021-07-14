@@ -6,7 +6,6 @@ import {
   isUnique,
 } from './field-classifiers';
 import { scalarToTS } from './template-helpers';
-import { DTO_RELATION_REQUIRED } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
