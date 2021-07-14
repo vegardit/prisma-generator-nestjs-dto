@@ -6,7 +6,6 @@ import {
   isUnique,
 } from './field-classifiers';
 import { scalarToTS } from './template-helpers';
-import { DTO_RELATION_REQUIRED } from './annotations';
 
 import type { DMMF } from '@prisma/generator-helper';
 import type { TemplateHelpers } from './template-helpers';
@@ -126,6 +125,11 @@ export const getRelationConnectInputFields = ({
   return foreignFields;
 };
 
+const getRelativePath = (from: string, to: string) => {
+  const result = path.relative(from, to);
+  return result || '.';
+};
+
 interface GenerateRelationInputParam {
   field: DMMF.Field;
   model: Model;
@@ -146,10 +150,7 @@ export const generateRelationInput = ({
   canCreateAnnotation,
   canConnectAnnotation,
 }: GenerateRelationInputParam) => {
-  const relationInputClassProps: Array<
-    Pick<ParsedField, 'name' | 'type'> &
-      Partial<Pick<ParsedField, 'isRequired'>>
-  > = [];
+  const relationInputClassProps: Array<Pick<ParsedField, 'name' | 'type'>> = [];
 
   const imports: ImportStatementParams[] = [];
   const apiExtraModels: string[] = [];
@@ -167,13 +168,10 @@ export const generateRelationInput = ({
       );
 
     imports.push({
-      from: path.relative(
+      from: `${getRelativePath(
         model.output.dto,
-        path.join(
-          modelToImportFrom.output.dto,
-          `${t.createDtoFilename(field.type)}`,
-        ),
-      ),
+        modelToImportFrom.output.dto,
+      )}${path.sep}${t.createDtoFilename(field.type)}`,
       destruct: [preAndPostfixedName],
     });
 
@@ -194,22 +192,23 @@ export const generateRelationInput = ({
       );
 
     imports.push({
-      from: path.relative(
+      from: `${getRelativePath(
         model.output.dto,
-        path.join(
-          modelToImportFrom.output.dto,
-          `${t.connectDtoFilename(field.type)}`,
-        ),
-      ),
+        modelToImportFrom.output.dto,
+      )}${path.sep}${t.connectDtoFilename(field.type)}`,
       destruct: [preAndPostfixedName],
     });
 
     relationInputClassProps.push({
       name: 'connect',
       type: preAndPostfixedName,
-      isRequired:
-        field.isRequired || isAnnotatedWith(field, DTO_RELATION_REQUIRED),
     });
+  }
+
+  if (!relationInputClassProps.length) {
+    throw new Error(
+      `Can not find relation input props for '${model.name}.${field.name}'`,
+    );
   }
 
   const originalInputClassName = `${t.transformClassNameCase(
@@ -224,10 +223,7 @@ export const generateRelationInput = ({
       relationInputClassProps.map((inputField) => ({
         ...inputField,
         kind: 'relation-input',
-        isRequired:
-          relationInputClassProps.length > 1
-            ? false
-            : inputField.isRequired || false,
+        isRequired: relationInputClassProps.length === 1,
         isList: field.isList,
       })),
       true,

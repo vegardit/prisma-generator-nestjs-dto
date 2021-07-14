@@ -1,7 +1,7 @@
 {
   "name": "@vegardit/prisma-generator-nestjs-dto",
   "description": "Generates DTO and Entity classes from Prisma Schema for NestJS",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "Apache-2.0",
   "author": {
     "name": "Benjamin Kroeger",
@@ -33,7 +33,7 @@
     "prisma-generator-nestjs-dto": "dist/cli.js"
   },
   "engines": {
-    "node": ">=16.3"
+    "node": ">=14"
   },
   "files": [
     "dist"
@@ -51,7 +51,7 @@
     "ts-jest": "^27.0.3"
   },
   "devDependencies": {
-    "@types/node": "^15.12.4",
+    "@types/node": "^16.3.2",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^4.26.1",
     "eslint": "^7.29.0",

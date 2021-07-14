@@ -72,7 +72,7 @@ export const computeEntityParams = ({
           ),
         );
         // don't double-import the same thing
-        // TODO should check for match on any import name ( - no matter from where)
+        // TODO should check for match on any import name ( - no matter where from)
         if (
           !imports.some(
             (item) =>

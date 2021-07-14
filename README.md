@@ -65,10 +65,9 @@ model Post {
 - @DtoReadOnly - omits field in `CreateDTO` and `UpdateDTO`
 - @DtoEntityHidden - omits field in `Entity`
 - @DtoCreateOptional - adds field **optionally** to `CreateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
-- @DtoUpdateHidden - omits field in `UpdateDTO`
 - @DtoUpdateOptional- adds field **optionally** to `UpdateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
 - @DtoRelationRequired - marks relation **required** in `Entity` although it's optional in PrismaSchema - useful when you don't want (SQL) `ON DELETE CASCADE` behavior - but your logical data schema sees this relation as required  
-(**Note**: becomes obsolete once [referentialActions](https://github.com/prisma/prisma/issues/7816) are released and stable)
+  (**Note**: becomes obsolete once [referentialActions](https://github.com/prisma/prisma/issues/7816) are released and stable)
 - @DtoRelationCanCreateOnCreate - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `CreateDTO` - useful when you want to allow to create related model instances
 - @DtoRelationCanConnectOnCreate - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `CreateDTO` - useful when you want/need to connect to an existing related instance
 - @DtoRelationCanCreateOnUpdate - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `UpdateDTO` - useful when you want to allow to create related model instances
@@ -81,23 +80,23 @@ model Post {
   
   ```prisma
 
-  generator nestjsDto {
-    provider                        = "prisma-generator-nestjs-dto"
-    output                          = "../src"
-    outputToNestJsResourceStructure = "true"
-  }
+generator nestjsDto {
+provider = "prisma-generator-nestjs-dto"
+output = "../src"
+outputToNestJsResourceStructure = "true"
+}
 
-  model Question {
-    id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    /// @DtoReadOnly
-    createdAt   DateTime @default(now())
-    /// @DtoRelationRequired
-    createdBy   User?    @relation("CreatedQuestions", fields: [createdById], references: [id])
-    createdById String?  @db.Uuid
-    updatedAt   DateTime @updatedAt
-    /// @DtoRelationRequired
-    updatedBy   User?    @relation("UpdatedQuestions", fields: [updatedById], references: [id])
-    updatedById String?  @db.Uuid
+model Question {
+id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+/// @DtoReadOnly
+createdAt DateTime @default(now())
+/// @DtoRelationRequired
+createdBy User? @relation("CreatedQuestions", fields: [createdById], references: [id])
+createdById String? @db.Uuid
+updatedAt DateTime @updatedAt
+/// @DtoRelationRequired
+updatedBy User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
+updatedById String? @db.Uuid
 
     /// @DtoRelationRequired
     /// @DtoRelationCanConnectOnCreate
@@ -114,99 +113,101 @@ model Post {
     title     String
     content   String
     responses Response[]
-  }
-  ```
+
+}
+
+````
 
 </details>
 
 <details>
-  <summary>Generated results</summary>
+<summary>Generated results</summary>
 
-  ```ts
-  // src/question/dto/connect-question.dto.ts
-  export class ConnectQuestionDto {
-    id: string;
-  }
-  ```
+```ts
+// src/question/dto/connect-question.dto.ts
+export class ConnectQuestionDto {
+  id: string;
+}
+````
 
-  ```ts
-  // src/question/dto/create-question.dto.ts
-  import { ApiExtraModels } from '@nestjs/swagger';
-  import { ConnectCategoryDto } from '../../category/dto/connect-category.dto';
-  import { CreateTagDto } from '../../tag/dto/create-tag.dto';
-  import { ConnectTagDto } from '../../tag/dto/connect-tag.dto';
+```ts
+// src/question/dto/create-question.dto.ts
+import { ApiExtraModels } from '@nestjs/swagger';
+import { ConnectCategoryDto } from '../../category/dto/connect-category.dto';
+import { CreateTagDto } from '../../tag/dto/create-tag.dto';
+import { ConnectTagDto } from '../../tag/dto/connect-tag.dto';
 
-  export class CreateQuestionCategoryRelationInputDto {
-    connect: ConnectCategoryDto;
-  }
-  export class CreateQuestionTagsRelationInputDto {
-    create?: CreateTagDto[];
-    connect?: ConnectTagDto[];
-  }
+export class CreateQuestionCategoryRelationInputDto {
+  connect: ConnectCategoryDto;
+}
+export class CreateQuestionTagsRelationInputDto {
+  create?: CreateTagDto[];
+  connect?: ConnectTagDto[];
+}
 
-  @ApiExtraModels(
-    ConnectCategoryDto,
-    CreateQuestionCategoryRelationInputDto,
-    CreateTagDto,
-    ConnectTagDto,
-    CreateQuestionTagsRelationInputDto,
-  )
-  export class CreateQuestionDto {
-    category: CreateQuestionCategoryRelationInputDto;
-    tags?: CreateQuestionTagsRelationInputDto;
-    title: string;
-    content: string;
-  }
-  ```
+@ApiExtraModels(
+  ConnectCategoryDto,
+  CreateQuestionCategoryRelationInputDto,
+  CreateTagDto,
+  ConnectTagDto,
+  CreateQuestionTagsRelationInputDto,
+)
+export class CreateQuestionDto {
+  category: CreateQuestionCategoryRelationInputDto;
+  tags?: CreateQuestionTagsRelationInputDto;
+  title: string;
+  content: string;
+}
+```
 
-  ```ts
-  // src/question/dto/update-question.dto.ts
-  import { ApiExtraModels } from '@nestjs/swagger';
-  import { CreateTagDto } from '../../tag/dto/create-tag.dto';
-  import { ConnectTagDto } from '../../tag/dto/connect-tag.dto';
+```ts
+// src/question/dto/update-question.dto.ts
+import { ApiExtraModels } from '@nestjs/swagger';
+import { CreateTagDto } from '../../tag/dto/create-tag.dto';
+import { ConnectTagDto } from '../../tag/dto/connect-tag.dto';
 
-  export class UpdateQuestionTagsRelationInputDto {
-    create?: CreateTagDto[];
-    connect?: ConnectTagDto[];
-  }
+export class UpdateQuestionTagsRelationInputDto {
+  create?: CreateTagDto[];
+  connect?: ConnectTagDto[];
+}
 
-  @ApiExtraModels(CreateTagDto, ConnectTagDto, UpdateQuestionTagsRelationInputDto)
-  export class UpdateQuestionDto {
-    tags?: UpdateQuestionTagsRelationInputDto;
-    title?: string;
-    content?: string;
-  }
-  ```
+@ApiExtraModels(CreateTagDto, ConnectTagDto, UpdateQuestionTagsRelationInputDto)
+export class UpdateQuestionDto {
+  tags?: UpdateQuestionTagsRelationInputDto;
+  title?: string;
+  content?: string;
+}
+```
 
-  ```ts
-  // src/question.entities/question.entity.ts
-  import { User } from '../../user/entities/user.entity';
-  import { Category } from '../../category/entities/category.entity';
-  import { Tag } from '../../tag/entities/tag.entity';
-  import { Response } from '../../response/entities/response.entity';
+```ts
+// src/question/entities/question.entity.ts
+import { User } from '../../user/entities/user.entity';
+import { Category } from '../../category/entities/category.entity';
+import { Tag } from '../../tag/entities/tag.entity';
+import { Response } from '../../response/entities/response.entity';
 
-  export class Question {
-    id: string;
-    createdAt: Date;
-    createdBy?: User;
-    createdById: string;
-    updatedAt: Date;
-    updatedBy?: User;
-    updatedById: string;
-    category?: Category;
-    categoryId: string;
-    tags?: Tag[];
-    title: string;
-    content: string;
-    responses?: Response[];
-  }
-  ```
+export class Question {
+  id: string;
+  createdAt: Date;
+  createdBy?: User;
+  createdById: string;
+  updatedAt: Date;
+  updatedBy?: User;
+  updatedById: string;
+  category?: Category;
+  categoryId: string;
+  tags?: Tag[];
+  title: string;
+  content: string;
+  responses?: Response[];
+}
+```
 
 </details>
 
 ## <a name="principles"></a>Principles
 
-Generally we read field properties from the `DMMF.Field` information provided by `@prisma/generator-helper`. Since a few scenarios don't become quite clear from that, we also check for additional [annotations](#annotations) (or `decorators`)  in a field's `documentation` (that is anything provided as a [tripple slash comments](https://www.prisma.io/docs/concepts/components/prisma-schema#comments) for that field in your `prisma.schema`).
+Generally we read field properties from the `DMMF.Field` information provided by `@prisma/generator-helper`. Since a few scenarios don't become quite clear from that, we also check for additional [annotations](#annotations) (or `decorators`) in a field's `documentation` (that is anything provided as a [tripple slash comments](https://www.prisma.io/docs/concepts/components/prisma-schema#comments) for that field in your `prisma.schema`).
 
 Initially, we wanted `DTO` classes to `implement Prisma.<ModelName><(Create|Update)>Input` but that turned out to conflict with **required** relation fields.
 
@@ -229,12 +230,12 @@ In some cases you can derive information regarding related instances from contex
 - `@DtoRelationCanConnectOnCreate`
 - `@DtoRelationCanCreateOnUpdate`
 - `@DtoRelationCanConnectOnUpdate`
-  
+
 [annotations](#annotations) that generate corresponding input properties on `CreateDTO` and `UpdateDTO` (optional or required - depending on the nature of the relation).
 
 When generating a `Model`s `CreateDTO` class, field that meet any of the following conditions are omitted (**order matters**):
 
-- `isReadOnly` OR is annotated with `@DtoReadOnly` (*Note:* this apparently includes relation scalar fields)
+- `isReadOnly` OR is annotated with `@DtoReadOnly` (_Note:_ this apparently includes relation scalar fields)
 - field represents a relation (`field.kind === 'object'`) and is not annotated with `@DtoRelationCanCreateOnCreate` or `@DtoRelationCanConnectOnCreate`
 - field is a [relation scalar](https://www.prisma.io/docs/concepts/components/prisma-schema/relations/#annotated-relation-fields-and-relation-scalar-fields)
 - field is not annotated with `@DtoCreateOptional` AND
@@ -247,12 +248,14 @@ When generating a `Model`s `CreateDTO` class, field that meet any of the followi
 When generating a `Model`s `UpdateDTO` class, field that meet any of the following conditions are omitted (**order matters**):
 
 - field is annotated with `@DtoUpdateOptional`
-- `isReadOnly` OR is annotated with `@DtoReadOnly` (*Note:* this apparently includes relation scalar fields)
+- `isReadOnly` OR is annotated with `@DtoReadOnly` (_Note:_ this apparently includes relation scalar fields)
 - `isId` (id fields are not supposed to be updated by the user)
 - field represents a relation (`field.kind === 'object'`) and is not annotated with `@DtoRelationCanCreateOnUpdate` or `@DtoRelationCanConnectOnUpdate`
 - field is a [relation scalar](https://www.prisma.io/docs/concepts/components/prisma-schema/relations/#annotated-relation-fields-and-relation-scalar-fields)
 - field is not annotated with `@DtoUpdateOptional` AND
+  - `isId` (id fields are not supposed to be updated by the user)
   - `isUpdatedAt` ([Prisma](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat) will inject value)
+  - `isRequired && hasDefaultValue` (for schema-required fields that fallback to a default value when empty. Think: `createdAt` timestamps with `@default(now())` (see [now()](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#now)))
 
 ### Entity
 

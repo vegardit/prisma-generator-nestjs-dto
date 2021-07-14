@@ -223,10 +223,14 @@ declare module '@prisma/generator-helper' {
     isCustomOutput?: boolean;
     provider: EnvValue;
     config: Dictionary<string>;
-    binaryTargets: string[];
+    binaryTargets: BinaryTargetsEnvValue[];
     previewFeatures: string[];
   }
   export interface EnvValue {
+    fromEnvVar: null | string;
+    value: string;
+  }
+  export interface BinaryTargetsEnvValue {
     fromEnvVar: null | string;
     value: string;
   }
@@ -252,7 +256,7 @@ declare module '@prisma/generator-helper' {
     queryEngine?: {
       [binaryTarget: string]: string;
     };
-    libqueryEngineNapi?: {
+    libqueryEngine?: {
       [binaryTarget: string]: string;
     };
     introspectionEngine?: {
@@ -274,7 +278,7 @@ declare module '@prisma/generator-helper' {
   };
   export type EngineType =
     | 'queryEngine'
-    | 'libqueryEngineNapi'
+    | 'libqueryEngine'
     | 'migrationEngine'
     | 'introspectionEngine'
     | 'prismaFmt';
