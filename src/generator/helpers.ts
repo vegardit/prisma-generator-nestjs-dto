@@ -125,7 +125,7 @@ export const getRelationConnectInputFields = ({
   return foreignFields;
 };
 
-const getRelativePath = (from: string, to: string) => {
+export const getRelativePath = (from: string, to: string) => {
   const result = path.relative(from, to);
   return result || '.';
 };
@@ -238,4 +238,59 @@ export const generateRelationInput = ({
     generatedClasses,
     apiExtraModels,
   };
+};
+
+export const mergeImportStatements = (
+  first: ImportStatementParams,
+  second: ImportStatementParams,
+): ImportStatementParams => {
+  if (first.from !== second.from) {
+    throw new Error(
+      `Can not merge import statements; 'from' parameter is different`,
+    );
+  }
+
+  if (first.default && second.default) {
+    throw new Error(
+      `Can not merge import statements; both statements have set the 'default' preoperty`,
+    );
+  }
+
+  const firstDestruct = first.destruct || [];
+  const secondDestruct = second.destruct || [];
+  const destructStrings = uniq(
+    [...firstDestruct, ...secondDestruct].filter(
+      (destructItem) => typeof destructItem === 'string',
+    ),
+  );
+
+  const destructObject = [...firstDestruct, ...secondDestruct].reduce(
+    (result: Record<string, string>, destructItem) => {
+      if (typeof destructItem === 'string') return result;
+
+      return { ...result, ...destructItem };
+    },
+    {} as Record<string, string>,
+  );
+
+  return {
+    ...first,
+    ...second,
+    destruct: [...destructStrings, destructObject],
+  };
+};
+
+export const zipImportStatementParams = (
+  items: ImportStatementParams[],
+): ImportStatementParams[] => {
+  const itemsByFrom = items.reduce((result, item) => {
+    const { from } = item;
+    const { [from]: existingItem } = result;
+    if (!existingItem) {
+      return { ...result, [from]: item };
+    }
+    return { ...result, [from]: mergeImportStatements(existingItem, item) };
+  }, {} as Record<ImportStatementParams['from'], ImportStatementParams>);
+
+  return Object.values(itemsByFrom);
 };

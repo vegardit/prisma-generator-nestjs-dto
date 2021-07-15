@@ -3,8 +3,10 @@ import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from '../annotations';
 import { isAnnotatedWith, isRelation, isRequired } from '../field-classifiers';
 import {
   getRelationScalars,
+  getRelativePath,
   makeImportsFromPrismaClient,
   mapDMMFToParsedField,
+  zipImportStatementParams,
 } from '../helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
@@ -64,13 +66,11 @@ export const computeEntityParams = ({
           );
 
         const importName = templateHelpers.entityName(field.type);
-        const importFrom = path.relative(
+        const importFrom = `${getRelativePath(
           model.output.dto,
-          path.join(
-            modelToImportFrom.output.entity,
-            `${templateHelpers.entityFilename(field.type)}`,
-          ),
-        );
+          modelToImportFrom.output.dto,
+        )}${path.sep}${templateHelpers.entityFilename(field.type)}`;
+
         // don't double-import the same thing
         // TODO should check for match on any import name ( - no matter where from)
         if (
@@ -116,5 +116,10 @@ export const computeEntityParams = ({
   const importPrismaClient = makeImportsFromPrismaClient(model);
   if (importPrismaClient) imports.unshift(importPrismaClient);
 
-  return { model, fields, imports, apiExtraModels };
+  return {
+    model,
+    fields,
+    imports: zipImportStatementParams(imports),
+    apiExtraModels,
+  };
 };
