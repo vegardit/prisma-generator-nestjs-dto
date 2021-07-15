@@ -125,7 +125,7 @@ export const getRelationConnectInputFields = ({
   return foreignFields;
 };
 
-const getRelativePath = (from: string, to: string) => {
+export const getRelativePath = (from: string, to: string) => {
   const result = path.relative(from, to);
   return result || '.';
 };
