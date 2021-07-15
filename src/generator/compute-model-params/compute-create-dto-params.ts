@@ -20,6 +20,7 @@ import {
   getRelationScalars,
   makeImportsFromPrismaClient,
   mapDMMFToParsedField,
+  zipImportStatementParams,
 } from '../helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
@@ -117,5 +118,11 @@ export const computeCreateDtoParams = ({
   const importPrismaClient = makeImportsFromPrismaClient(model);
   if (importPrismaClient) imports.unshift(importPrismaClient);
 
-  return { model, fields, imports, extraClasses, apiExtraModels };
+  return {
+    model,
+    fields,
+    imports: zipImportStatementParams(imports),
+    extraClasses,
+    apiExtraModels,
+  };
 };
