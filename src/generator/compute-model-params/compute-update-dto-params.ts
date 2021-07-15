@@ -40,6 +40,7 @@ export const computeUpdateDtoParams = ({
   allModels,
   templateHelpers,
 }: ComputeUpdateDtoParamsParam): UpdateDtoParams => {
+  let hasEnum = false;
   const imports: ImportStatementParams[] = [];
   const extraClasses: string[] = [];
   const apiExtraModels: string[] = [];
@@ -86,11 +87,17 @@ export const computeUpdateDtoParams = ({
       if (isRequiredWithDefaultValue(field)) return result;
     }
 
+    if (field.kind === 'enum') hasEnum = true;
+
     return [...result, mapDMMFToParsedField(field, overrides)];
   }, [] as ParsedField[]);
 
-  if (apiExtraModels.length)
-    imports.unshift({ from: '@nestjs/swagger', destruct: ['ApiExtraModels'] });
+  if (apiExtraModels.length || hasEnum) {
+    const destruct = [];
+    if (apiExtraModels.length) destruct.push('ApiExtraModels');
+    if (hasEnum) destruct.push('ApiProperty');
+    imports.unshift({ from: '@nestjs/swagger', destruct });
+  }
 
   const importPrismaClient = makeImportsFromPrismaClient(model);
   if (importPrismaClient) imports.unshift(importPrismaClient);

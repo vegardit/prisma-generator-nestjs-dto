@@ -147,7 +147,10 @@ export const makeHelpers = ({
     useInputTypes = false,
     forceOptional = false,
   ) =>
-    `${field.name}${unless(
+    `${when(
+      field.kind === 'enum',
+      `@ApiProperty({ enum: ${fieldType(field, useInputTypes)}})\n`,
+    )}${field.name}${unless(
       field.isRequired && !forceOptional,
       '?',
     )}: ${fieldType(field, useInputTypes)};`;
