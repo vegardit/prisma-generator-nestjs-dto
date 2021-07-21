@@ -16,12 +16,12 @@ export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
   source.forEach((item) => target.push(item));
 
 export const makeImportsFromPrismaClient = (
-  model: DMMF.Model,
+  fields: ParsedField[],
 ): ImportStatementParams | null => {
   const enumsToImport = uniq(
-    model.fields.filter(({ kind }) => kind === 'enum').map(({ type }) => type),
+    fields.filter(({ kind }) => kind === 'enum').map(({ type }) => type),
   );
-  const importPrisma = model.fields
+  const importPrisma = fields
     .filter(({ kind }) => kind === 'scalar')
     .some(({ type }) => scalarToTS(type).includes('Prisma'));
 
