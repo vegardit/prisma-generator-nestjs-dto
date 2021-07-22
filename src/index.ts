@@ -79,7 +79,6 @@ export const generate = async (options: GeneratorOptions) => {
 
   if (!createIndex) return Promise.all(generatedResults);
 
-  // Generate index files from Index Collection
   await Promise.all(generatedResults);
   const generatedIndexCollections = indexCollections.map((indexCollection) =>
     fs.writeFile(`${indexCollection.dir}/index.ts`, indexCollection.content),

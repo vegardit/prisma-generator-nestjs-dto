@@ -15,7 +15,7 @@ interface GenerateIndexParam {
   indexCollections: IndexCollection[];
 }
 
-// Updates the indexCollection array
+// Updates the index collection
 export const updateIndexCollection = ({
   fileName,
   indexCollections,
