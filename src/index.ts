@@ -2,11 +2,13 @@ import fs from 'fs/promises';
 import * as path from 'path';
 import makeDir from 'make-dir';
 import { parseEnvValue } from '@prisma/sdk';
+import { generatorHandler } from '@prisma/generator-helper';
 import { updateIndexCollection } from './generator/index-collection-helpers';
+
+import type { GeneratorOptions } from '@prisma/generator-helper';
 
 import { run } from './generator';
 
-import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper';
 import { IndexCollection } from './generator/types';
 
 const indexCollections: IndexCollection[] = [];
