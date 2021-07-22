@@ -21,7 +21,7 @@ interface RunParam {
   dmmf: DMMF.Document;
   exportRelationModifierClasses: boolean;
   outputToNestJsResourceStructure: boolean;
-  generateIndex: boolean;
+  createIndex: boolean;
   connectDtoPrefix: string;
   createDtoPrefix: string;
   updateDtoPrefix: string;

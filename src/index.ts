@@ -46,8 +46,8 @@ export const generate = async (options: GeneratorOptions) => {
     false,
   );
 
-  const generateIndex = stringToBoolean(
-    options.generator.config.generateIndex,
+  const createIndex = stringToBoolean(
+    options.generator.config.createIndex,
     // using `true` as default value would be a breaking change
     false,
   );
@@ -57,7 +57,7 @@ export const generate = async (options: GeneratorOptions) => {
     dmmf: options.dmmf,
     exportRelationModifierClasses,
     outputToNestJsResourceStructure,
-    generateIndex,
+    createIndex,
     connectDtoPrefix,
     createDtoPrefix,
     updateDtoPrefix,
@@ -70,12 +70,12 @@ export const generate = async (options: GeneratorOptions) => {
     const dirName = path.dirname(fileName);
     await makeDir(dirName);
 
-    if (generateIndex) updateIndexCollection({ fileName, indexCollections });
+    if (createIndex) updateIndexCollection({ fileName, indexCollections });
 
     return fs.writeFile(fileName, content);
   });
 
-  if (!generateIndex) return Promise.all(generatedResults);
+  if (!createIndex) return Promise.all(generatedResults);
 
   // Generate index files from Index Collection
   await Promise.all(generatedResults);
