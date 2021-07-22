@@ -28,6 +28,7 @@ generator nestjsDto {
   provider                        = "prisma-generator-nestjs-dto"
   output                          = "../src/generated/nestjs-dto"
   outputToNestJsResourceStructure = "false"
+  createIndex                     = "false"
   exportRelationModifierClasses   = "true"
   createDtoPrefix                 = "Create"
   updateDtoPrefix                 = "Update"
@@ -49,6 +50,7 @@ All parameters are optional.
 - [`dtoSuffix`]: (default: `"Dto"`) - phrase to suffix every `CreateDTO` and `UpdateDTO` class with
 - [`entityPrefix`]: (default: `""`) - phrase to prefix every `Entity` class with
 - [`entitySuffix`]: (default: `""`) - phrase to suffix every `Entity` class with
+- [`createIndex`]: (default: `false`) - Should an index.ts should be created for every folder?
 
 ## <a name="annotations"></a>Annotations
 
