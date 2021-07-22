@@ -74,3 +74,8 @@ export interface ModelParams {
   update: UpdateDtoParams;
   entity: EntityParams;
 }
+
+export interface IndexCollection {
+  dir: string;
+  content: string;
+}

@@ -1,12 +1,15 @@
 import fs from 'fs/promises';
 import * as path from 'path';
 import makeDir from 'make-dir';
-import { generatorHandler } from '@prisma/generator-helper';
 import { parseEnvValue } from '@prisma/sdk';
+import { updateIndexCollection } from './generator/index-collection-helpers';
 
 import { run } from './generator';
 
-import type { GeneratorOptions } from '@prisma/generator-helper';
+import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper';
+import { IndexCollection } from './generator/types';
+
+const indexCollections: IndexCollection[] = [];
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -19,7 +22,7 @@ export const stringToBoolean = (input: string, defaultValue = false) => {
   return defaultValue;
 };
 
-export const generate = (options: GeneratorOptions) => {
+export const generate = async (options: GeneratorOptions) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const output = parseEnvValue(options.generator.output!);
 
@@ -43,11 +46,18 @@ export const generate = (options: GeneratorOptions) => {
     false,
   );
 
+  const generateIndex = stringToBoolean(
+    options.generator.config.generateIndex,
+    // using `true` as default value would be a breaking change
+    false,
+  );
+
   const results = run({
     output,
     dmmf: options.dmmf,
     exportRelationModifierClasses,
     outputToNestJsResourceStructure,
+    generateIndex,
     connectDtoPrefix,
     createDtoPrefix,
     updateDtoPrefix,
@@ -56,12 +66,24 @@ export const generate = (options: GeneratorOptions) => {
     entitySuffix,
   });
 
-  return Promise.all(
-    results.map(async ({ fileName, content }) => {
-      await makeDir(path.dirname(fileName));
-      return fs.writeFile(fileName, content);
-    }),
+  const generatedResults = results.map(async ({ fileName, content }) => {
+    const dirName = path.dirname(fileName);
+    await makeDir(dirName);
+
+    if (generateIndex) updateIndexCollection({ fileName, indexCollections });
+
+    return fs.writeFile(fileName, content);
+  });
+
+  if (!generateIndex) return Promise.all(generatedResults);
+
+  // Generate index files from Index Collection
+  await Promise.all(generatedResults);
+  const generatedIndexCollections = indexCollections.map((indexCollection) =>
+    fs.writeFile(`${indexCollection.dir}/index.ts`, indexCollection.content),
   );
+
+  return Promise.all(generatedIndexCollections);
 };
 
 generatorHandler({
