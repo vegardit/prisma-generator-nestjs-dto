@@ -25,7 +25,7 @@ export const makeImportsFromPrismaClient = (
     .filter(({ kind }) => kind === 'scalar')
     .some(({ type }) => scalarToTS(type).includes('Prisma'));
 
-  if (!enumsToImport.length || importPrisma) {
+  if (!(enumsToImport.length || importPrisma)) {
     return null;
   }
 
