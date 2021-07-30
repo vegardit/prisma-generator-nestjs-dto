@@ -75,7 +75,4 @@ export interface ModelParams {
   entity: EntityParams;
 }
 
-export interface IndexCollection {
-  dir: string;
-  content: string;
-}
+export type IndexCollection = Record<string, string>;
