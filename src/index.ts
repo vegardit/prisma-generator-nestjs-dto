@@ -3,15 +3,12 @@ import * as path from 'path';
 import makeDir from 'make-dir';
 import { parseEnvValue } from '@prisma/sdk';
 import { generatorHandler } from '@prisma/generator-helper';
-import { updateIndexCollection } from './generator/index-collection-helpers';
+import { exportContent } from './generator/index-collection-helpers';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
 
 import { run } from './generator';
-
 import { IndexCollection } from './generator/types';
-
-const indexCollections: IndexCollection[] = [];
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -48,7 +45,7 @@ export const generate = async (options: GeneratorOptions) => {
     false,
   );
 
-  const createIndex = stringToBoolean(
+  const reExport = stringToBoolean(
     options.generator.config.createIndex,
     // using `true` as default value would be a breaking change
     false,
@@ -59,7 +56,6 @@ export const generate = async (options: GeneratorOptions) => {
     dmmf: options.dmmf,
     exportRelationModifierClasses,
     outputToNestJsResourceStructure,
-    createIndex,
     connectDtoPrefix,
     createDtoPrefix,
     updateDtoPrefix,
@@ -68,23 +64,29 @@ export const generate = async (options: GeneratorOptions) => {
     entitySuffix,
   });
 
-  const generatedResults = results.map(async ({ fileName, content }) => {
+  const indexCollections: IndexCollection = {};
+
+  if (reExport) {
+    results.forEach(({ fileName }) => {
+      const dirName = path.dirname(fileName);
+      if (Boolean(indexCollections[dirName])) {
+        indexCollections[dirName] = `${
+          indexCollections[dirName]
+        }\n${exportContent(fileName)}`;
+      } else {
+        indexCollections[dirName] = exportContent(fileName);
+      }
+    });
+  }
+
+  return results.map(async ({ fileName, content }) => {
     const dirName = path.dirname(fileName);
     await makeDir(dirName);
-
-    if (createIndex) updateIndexCollection({ fileName, indexCollections });
-
+    if (reExport && Boolean(indexCollections[dirName])) {
+      await fs.writeFile(`${dirName}/index.ts`, indexCollections[dirName]);
+    }
     return fs.writeFile(fileName, content);
   });
-
-  if (!createIndex) return Promise.all(generatedResults);
-
-  await Promise.all(generatedResults);
-  const generatedIndexCollections = indexCollections.map((indexCollection) =>
-    fs.writeFile(`${indexCollection.dir}/index.ts`, indexCollection.content),
-  );
-
-  return Promise.all(generatedIndexCollections);
 };
 
 generatorHandler({
