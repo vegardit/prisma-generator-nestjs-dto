@@ -7,6 +7,7 @@ import { parseEnvValue } from '@prisma/sdk';
 import { run } from './generator';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
+import type { WriteableFileSpecs } from './generator/types';
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -43,6 +44,12 @@ export const generate = (options: GeneratorOptions) => {
     false,
   );
 
+  const reExport = stringToBoolean(
+    options.generator.config.reExport,
+    // using `true` as default value would be a breaking change
+    false,
+  );
+
   const results = run({
     output,
     dmmf: options.dmmf,
@@ -56,11 +63,30 @@ export const generate = (options: GeneratorOptions) => {
     entitySuffix,
   });
 
+  const indexCollections: Record<string, WriteableFileSpecs> = {};
+
+  if (reExport) {
+    results.forEach(({ fileName }) => {
+      const dirName = path.dirname(fileName);
+
+      const { [dirName]: fileSpec } = indexCollections;
+      indexCollections[dirName] = {
+        fileName: fileSpec?.fileName || path.join(dirName, 'index.ts'),
+        content: [
+          fileSpec?.content || '',
+          `export * from './${path.basename(fileName, '.ts')}';`,
+        ].join('\n'),
+      };
+    });
+  }
+
   return Promise.all(
-    results.map(async ({ fileName, content }) => {
-      await makeDir(path.dirname(fileName));
-      return fs.writeFile(fileName, content);
-    }),
+    results
+      .concat(Object.values(indexCollections))
+      .map(async ({ fileName, content }) => {
+        await makeDir(path.dirname(fileName));
+        return fs.writeFile(fileName, content);
+      }),
   );
 };
 

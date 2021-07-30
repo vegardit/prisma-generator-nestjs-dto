@@ -6,8 +6,9 @@ datasource db {
 generator nestgraphql {
   provider                        = "node -r ts-node/register/transpile-only src/cli.ts"
   output                          = "../src/@generated/prisma-nestjs-graphql"
-  outputToNestJsResourceStructure = "true"
+  outputToNestJsResourceStructure = "false"
   exportRelationModifierClasses   = "true"
+  reExport                        = "true"
   createDtoPrefix                 = "Create"
   updateDtoPrefix                 = "Update"
   dtoSuffix                       = "Dto"
