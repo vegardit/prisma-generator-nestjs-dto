@@ -29,6 +29,7 @@ generator nestjsDto {
   output                          = "../src/generated/nestjs-dto"
   outputToNestJsResourceStructure = "false"
   exportRelationModifierClasses   = "true"
+  reExport                        = "false"
   createDtoPrefix                 = "Create"
   updateDtoPrefix                 = "Update"
   dtoSuffix                       = "Dto"
@@ -44,6 +45,7 @@ All parameters are optional.
 - [`output`]: (default: `"../src/generated/nestjs-dto"`) - output path relative to your `schema.prisma` file
 - [`outputToNestJsResourceStructure`]: (default: `"false"`) - writes `dto`s and `entities` to subfolders aligned with [NestJS CRUD generator](https://docs.nestjs.com/recipes/crud-generator). Resource module name is derived from lower-cased model name in `schema.prisma`
 - [`exportRelationModifierClasses`]: (default: `"true"`) - Should extra classes generated for relationship field operations on DTOs be exported?
+- [`reExport`]: (default: `false`) - Should an index.ts be created for every folder?
 - [`createDtoPrefix`]: (default: `"Create"`) - phrase to prefix every `CreateDTO` class with
 - [`updateDtoPrefix`]: (default: `"Update"`) - phrase to prefix every `UpdateDTO` class with
 - [`dtoSuffix`]: (default: `"Dto"`) - phrase to suffix every `CreateDTO` and `UpdateDTO` class with

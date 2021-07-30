@@ -14,7 +14,7 @@ import { DTO_IGNORE_MODEL } from './annotations';
 import { isAnnotatedWith } from './field-classifiers';
 
 import type { DMMF } from '@prisma/generator-helper';
-import { Model } from './types';
+import { Model, WriteableFileSpecs } from './types';
 
 interface RunParam {
   output: string;
@@ -28,7 +28,11 @@ interface RunParam {
   entityPrefix: string;
   entitySuffix: string;
 }
-export const run = ({ output, dmmf, ...options }: RunParam) => {
+export const run = ({
+  output,
+  dmmf,
+  ...options
+}: RunParam): WriteableFileSpecs[] => {
   const {
     exportRelationModifierClasses,
     outputToNestJsResourceStructure,

@@ -74,3 +74,8 @@ export interface ModelParams {
   update: UpdateDtoParams;
   entity: EntityParams;
 }
+
+export type WriteableFileSpecs = {
+  fileName: string;
+  content: string;
+};
