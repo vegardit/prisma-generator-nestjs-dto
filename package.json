@@ -50,6 +50,7 @@
     "@prisma/sdk": "^2.30.2",
     "case": "^1.6.3",
     "make-dir": "^3.1.0",
+    "slash": "^4.0.0",
     "tar": "^6.1.11"
   },
   "devDependencies": {
