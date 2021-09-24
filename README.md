@@ -1,6 +1,5 @@
 # Prisma Generator NestJS DTO
 
-[![Build Status](https://travis-ci.org/vegardit/prisma-generator-nestjs-dto.svg?branch=master)](https://travis-ci.org/vegardit/prisma-generator-nestjs-dto)
 [![Release](https://badge.fury.io/js/%40vegardit%2Fprisma-generator-nestjs-dto.svg)](https://www.npmjs.com/package/@vegardit/prisma-generator-nestjs-dto)
 [![License](https://img.shields.io/github/license/vegardit/prisma-generator-nestjs-dto.svg?label=license)](#license)
 
