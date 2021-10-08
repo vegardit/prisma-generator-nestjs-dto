@@ -3,9 +3,9 @@ datasource db {
   url      = "postgresql://johndoe:mypassword@localhost:5432/mydb?schema=public"
 }
 
-generator nestgraphql {
+generator nestjsDto {
   provider                        = "node -r ts-node/register/transpile-only src/cli.ts"
-  output                          = "../src/@generated/prisma-nestjs-graphql"
+  output                          = "../src/@generated/prisma-generator-nestjs-dto"
   outputToNestJsResourceStructure = "false"
   exportRelationModifierClasses   = "true"
   reExport                        = "true"

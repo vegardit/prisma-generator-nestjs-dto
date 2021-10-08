@@ -1,4 +1,5 @@
 import path from 'path';
+import slash from 'slash';
 import {
   isAnnotatedWith,
   isId,
@@ -126,7 +127,7 @@ export const getRelationConnectInputFields = ({
 };
 
 export const getRelativePath = (from: string, to: string) => {
-  const result = path.relative(from, to);
+  const result = slash(path.relative(from, to));
   return result || '.';
 };
 
@@ -168,10 +169,11 @@ export const generateRelationInput = ({
       );
 
     imports.push({
-      from: `${getRelativePath(
-        model.output.dto,
-        modelToImportFrom.output.dto,
-      )}${path.sep}${t.createDtoFilename(field.type)}`,
+      from: slash(
+        `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+          path.sep
+        }${t.createDtoFilename(field.type)}`,
+      ),
       destruct: [preAndPostfixedName],
     });
 
@@ -192,10 +194,11 @@ export const generateRelationInput = ({
       );
 
     imports.push({
-      from: `${getRelativePath(
-        model.output.dto,
-        modelToImportFrom.output.dto,
-      )}${path.sep}${t.connectDtoFilename(field.type)}`,
+      from: slash(
+        `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+          path.sep
+        }${t.connectDtoFilename(field.type)}`,
+      ),
       destruct: [preAndPostfixedName],
     });
 
