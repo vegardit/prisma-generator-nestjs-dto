@@ -1,4 +1,5 @@
 import path from 'path';
+import slash from 'slash';
 import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from '../annotations';
 import { isAnnotatedWith, isRelation, isRequired } from '../field-classifiers';
 import {
@@ -66,10 +67,12 @@ export const computeEntityParams = ({
           );
 
         const importName = templateHelpers.entityName(field.type);
-        const importFrom = `${getRelativePath(
-          model.output.entity,
-          modelToImportFrom.output.entity,
-        )}${path.sep}${templateHelpers.entityFilename(field.type)}`;
+        const importFrom = slash(
+          `${getRelativePath(
+            model.output.entity,
+            modelToImportFrom.output.entity,
+          )}${path.sep}${templateHelpers.entityFilename(field.type)}`,
+        );
 
         // don't double-import the same thing
         // TODO should check for match on any import name ( - no matter where from)
