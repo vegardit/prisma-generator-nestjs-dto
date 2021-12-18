@@ -4,18 +4,19 @@ datasource db {
 }
 
 generator nestjsDto {
-  provider                        = "node -r ts-node/register/transpile-only src/cli.ts"
-  output                          = "../src/@generated/prisma-generator-nestjs-dto"
-  outputToNestJsResourceStructure = "false"
-  exportRelationModifierClasses   = "true"
-  reExport                        = "true"
-  createDtoPrefix                 = "Create"
-  updateDtoPrefix                 = "Update"
-  dtoSuffix                       = "Dto"
-  entityPrefix                    = ""
-  entitySuffix                    = ""
+  provider                              = "node -r ts-node/register/transpile-only src/cli.ts"
+  output                                = "../src/@generated/prisma-generator-nestjs-dto"
+  outputToNestJsResourceStructure       = "true"
+  exportRelationModifierClasses         = "true"
+  reExport                              = "true"
+  createDtoPrefix                       = "Create"
+  updateDtoPrefix                       = "Update"
+  dtoSuffix                             = "Dto"
+  entityPrefix                          = ""
+  entitySuffix                          = ""
 }
 
+/// @DtoModelName Products
 model Product {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @db.VarChar(255)
@@ -49,11 +50,13 @@ model Product {
   @@map("products")
 }
 
+/// @DtoModelName Categories
 model Category {
   id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   Product Product[]
 }
 
+/// @DtoModelName Companies
 model Company {
   id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   Product Product[]

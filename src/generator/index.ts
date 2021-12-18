@@ -10,8 +10,8 @@ import { generateConnectDto } from './generate-connect-dto';
 import { generateCreateDto } from './generate-create-dto';
 import { generateUpdateDto } from './generate-update-dto';
 import { generateEntity } from './generate-entity';
-import { DTO_IGNORE_MODEL } from './annotations';
-import { isAnnotatedWith } from './field-classifiers';
+import { DTO_IGNORE_MODEL, DTO_MODEL_NAME } from './annotations';
+import { getAnnotationValue, isAnnotatedWith } from './field-classifiers';
 
 import type { DMMF } from '@prisma/generator-helper';
 import { Model, WriteableFileSpecs } from './types';
@@ -50,20 +50,26 @@ export const run = ({
     .filter((model) => !isAnnotatedWith(model, DTO_IGNORE_MODEL))
     // adds `output` information for each model so we can compute relative import paths
     // this assumes that NestJS resource modules (more specifically their folders on disk) are named as `transformFileNameCase(model.name)`
-    .map((model) => ({
-      ...model,
-      output: {
-        dto: outputToNestJsResourceStructure
-          ? path.join(output, transformFileNameCase(model.name), 'dto')
-          : output,
-        entity: outputToNestJsResourceStructure
-          ? path.join(output, transformFileNameCase(model.name), 'entities')
-          : output,
-      },
-    }));
+    .map((model) => {
+      const modelName = getAnnotationValue(model, DTO_MODEL_NAME) || model.name;
+      model.plural = getAnnotationValue(model, DTO_MODEL_NAME) || model.name;
+      return {
+        ...model,
+        output: {
+          dto: outputToNestJsResourceStructure
+            ? path.join(output, transformFileNameCase(modelName), 'dto')
+            : output,
+          entity: outputToNestJsResourceStructure
+            ? path.join(output, transformFileNameCase(modelName), 'entities')
+            : output,
+        },
+      };
+    });
 
   const modelFiles = filteredModels.map((model) => {
     logger.info(`Processing Model ${model.name}`);
+
+    const modelName = getAnnotationValue(model, DTO_MODEL_NAME) || model.name;
 
     const modelParams = computeModelParams({
       model,
@@ -75,7 +81,7 @@ export const run = ({
     const connectDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.connectDtoFilename(model.name, true),
+        templateHelpers.connectDtoFilename(modelName, true),
       ),
       content: generateConnectDto({
         ...modelParams.connect,
@@ -87,7 +93,7 @@ export const run = ({
     const createDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.createDtoFilename(model.name, true),
+        templateHelpers.createDtoFilename(modelName, true),
       ),
       content: generateCreateDto({
         ...modelParams.create,
@@ -101,7 +107,7 @@ export const run = ({
     const updateDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.updateDtoFilename(model.name, true),
+        templateHelpers.updateDtoFilename(modelName, true),
       ),
       content: generateUpdateDto({
         ...modelParams.update,
@@ -115,7 +121,7 @@ export const run = ({
     const entity = {
       fileName: path.join(
         model.output.entity,
-        templateHelpers.entityFilename(model.name, true),
+        templateHelpers.entityFilename(modelName, true),
       ),
       content: generateEntity({
         ...modelParams.entity,

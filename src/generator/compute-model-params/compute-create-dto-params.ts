@@ -1,7 +1,7 @@
 import {
   DTO_CREATE_OPTIONAL,
   DTO_RELATION_CAN_CONNECT_ON_CREATE,
-  DTO_RELATION_CAN_CRAEATE_ON_CREATE,
+  DTO_RELATION_CAN_CREATE_ON_CREATE,
   DTO_RELATION_MODIFIERS_ON_CREATE,
   DTO_RELATION_REQUIRED,
 } from '../annotations';
@@ -65,7 +65,7 @@ export const computeCreateDtoParams = ({
         allModels,
         templateHelpers,
         preAndSuffixClassName: templateHelpers.createDtoName,
-        canCreateAnnotation: DTO_RELATION_CAN_CRAEATE_ON_CREATE,
+        canCreateAnnotation: DTO_RELATION_CAN_CREATE_ON_CREATE,
         canConnectAnnotation: DTO_RELATION_CAN_CONNECT_ON_CREATE,
       });
 

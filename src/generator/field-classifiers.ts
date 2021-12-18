@@ -9,6 +9,15 @@ export const isAnnotatedWith = (
   return annotation.test(documentation);
 };
 
+export const getAnnotationValue = (
+  instance: DMMF.Field | DMMF.Model,
+  annotation: RegExp,
+): string | undefined => {
+  const { documentation = '' } = instance;
+  const res = annotation.exec(documentation);
+  return res?.[1];
+};
+
 export const isAnnotatedWithOneOf = (
   instance: DMMF.Field | DMMF.Model,
   annotations: RegExp[],
