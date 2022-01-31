@@ -7,7 +7,7 @@ import { parseEnvValue } from '@prisma/sdk';
 import { run } from './generator';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
-import type { WriteableFileSpecs } from './generator/types';
+import type { WriteableFileSpecs, NamingStyle } from './generator/types';
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -31,7 +31,12 @@ export const generate = (options: GeneratorOptions) => {
     dtoSuffix = 'Dto',
     entityPrefix = '',
     entitySuffix = '',
-  } = options.generator.config;
+    fileNamingStyle = 'camel',
+    classNamingStyle = 'pascal',
+  } = options.generator.config as typeof options.generator.config & {
+    fileNamingStyle?: NamingStyle;
+    classNamingStyle?: NamingStyle;
+  };
 
   const exportRelationModifierClasses = stringToBoolean(
     options.generator.config.exportRelationModifierClasses,
@@ -50,6 +55,25 @@ export const generate = (options: GeneratorOptions) => {
     false,
   );
 
+  const supportedNamingStyles = ['kebab', 'camel', 'pascal', 'snake'];
+  const isSupportedNamingStyle = (style: string): style is NamingStyle =>
+    supportedNamingStyles.includes(style);
+
+  if (!isSupportedNamingStyle(fileNamingStyle)) {
+    throw new Error(
+      `'${fileNamingStyle}' is not a valid file naming style. Valid options are ${supportedNamingStyles
+        .map((s) => `'${s}'`)
+        .join(', ')}.`,
+    );
+  }
+  if (!isSupportedNamingStyle(classNamingStyle)) {
+    throw new Error(
+      `'${classNamingStyle}' is not a valid class naming style. Valid options are ${supportedNamingStyles
+        .map((s) => `'${s}'`)
+        .join(', ')}.`,
+    );
+  }
+
   const results = run({
     output,
     dmmf: options.dmmf,
@@ -61,6 +85,8 @@ export const generate = (options: GeneratorOptions) => {
     dtoSuffix,
     entityPrefix,
     entitySuffix,
+    fileNamingStyle,
+    classNamingStyle,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};
