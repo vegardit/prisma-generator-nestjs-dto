@@ -11,7 +11,7 @@ import { DTO_IGNORE_MODEL } from './annotations';
 import { isAnnotatedWith } from './field-classifiers';
 
 import type { DMMF } from '@prisma/generator-helper';
-import { NamingStyle, Model, WriteableFileSpecs } from './types';
+import { FileNamingStyle, Model, WriteableFileSpecs } from './types';
 
 interface RunParam {
   output: string;
@@ -24,8 +24,7 @@ interface RunParam {
   dtoSuffix: string;
   entityPrefix: string;
   entitySuffix: string;
-  fileNamingStyle: NamingStyle;
-  classNamingStyle: NamingStyle;
+  fileNamingStyle: FileNamingStyle;
 }
 
 export const run = ({
@@ -37,11 +36,10 @@ export const run = ({
     exportRelationModifierClasses,
     outputToNestJsResourceStructure,
     fileNamingStyle = 'camel',
-    classNamingStyle = 'pascal',
     ...preAndSuffixes
   } = options;
 
-  const transformers: Record<NamingStyle, (str: string) => string> = {
+  const transformers: Record<FileNamingStyle, (str: string) => string> = {
     camel,
     kebab,
     pascal,
@@ -49,11 +47,10 @@ export const run = ({
   };
 
   const transformFileNameCase = transformers[fileNamingStyle];
-  const transformClassNameCase = transformers[classNamingStyle];
 
   const templateHelpers = makeHelpers({
     transformFileNameCase,
-    transformClassNameCase,
+    transformClassNameCase: pascal,
     ...preAndSuffixes,
   });
   const allModels = dmmf.datamodel.models;

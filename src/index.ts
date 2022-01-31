@@ -7,7 +7,7 @@ import { parseEnvValue } from '@prisma/sdk';
 import { run } from './generator';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
-import type { WriteableFileSpecs, NamingStyle } from './generator/types';
+import type { WriteableFileSpecs, FileNamingStyle } from './generator/types';
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -32,10 +32,8 @@ export const generate = (options: GeneratorOptions) => {
     entityPrefix = '',
     entitySuffix = '',
     fileNamingStyle = 'camel',
-    classNamingStyle = 'pascal',
   } = options.generator.config as typeof options.generator.config & {
-    fileNamingStyle?: NamingStyle;
-    classNamingStyle?: NamingStyle;
+    fileNamingStyle?: FileNamingStyle;
   };
 
   const exportRelationModifierClasses = stringToBoolean(
@@ -55,20 +53,14 @@ export const generate = (options: GeneratorOptions) => {
     false,
   );
 
-  const supportedNamingStyles = ['kebab', 'camel', 'pascal', 'snake'];
-  const isSupportedNamingStyle = (style: string): style is NamingStyle =>
-    supportedNamingStyles.includes(style);
+  const supportedFileNamingStyles = ['kebab', 'camel', 'pascal', 'snake'];
+  const isSupportedFileNamingStyle = (
+    style: string,
+  ): style is FileNamingStyle => supportedFileNamingStyles.includes(style);
 
-  if (!isSupportedNamingStyle(fileNamingStyle)) {
+  if (!isSupportedFileNamingStyle(fileNamingStyle)) {
     throw new Error(
-      `'${fileNamingStyle}' is not a valid file naming style. Valid options are ${supportedNamingStyles
-        .map((s) => `'${s}'`)
-        .join(', ')}.`,
-    );
-  }
-  if (!isSupportedNamingStyle(classNamingStyle)) {
-    throw new Error(
-      `'${classNamingStyle}' is not a valid class naming style. Valid options are ${supportedNamingStyles
+      `'${fileNamingStyle}' is not a valid file naming style. Valid options are ${supportedFileNamingStyles
         .map((s) => `'${s}'`)
         .join(', ')}.`,
     );
@@ -86,7 +78,6 @@ export const generate = (options: GeneratorOptions) => {
     entityPrefix,
     entitySuffix,
     fileNamingStyle,
-    classNamingStyle,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};
