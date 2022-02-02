@@ -7,7 +7,7 @@ import { parseEnvValue } from '@prisma/sdk';
 import { run } from './generator';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
-import type { WriteableFileSpecs } from './generator/types';
+import type { WriteableFileSpecs, FileNamingStyle } from './generator/types';
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -31,7 +31,10 @@ export const generate = (options: GeneratorOptions) => {
     dtoSuffix = 'Dto',
     entityPrefix = '',
     entitySuffix = '',
-  } = options.generator.config;
+    fileNamingStyle = 'camel',
+  } = options.generator.config as typeof options.generator.config & {
+    fileNamingStyle?: FileNamingStyle;
+  };
 
   const exportRelationModifierClasses = stringToBoolean(
     options.generator.config.exportRelationModifierClasses,
@@ -50,6 +53,19 @@ export const generate = (options: GeneratorOptions) => {
     false,
   );
 
+  const supportedFileNamingStyles = ['kebab', 'camel', 'pascal', 'snake'];
+  const isSupportedFileNamingStyle = (
+    style: string,
+  ): style is FileNamingStyle => supportedFileNamingStyles.includes(style);
+
+  if (!isSupportedFileNamingStyle(fileNamingStyle)) {
+    throw new Error(
+      `'${fileNamingStyle}' is not a valid file naming style. Valid options are ${supportedFileNamingStyles
+        .map((s) => `'${s}'`)
+        .join(', ')}.`,
+    );
+  }
+
   const results = run({
     output,
     dmmf: options.dmmf,
@@ -61,6 +77,7 @@ export const generate = (options: GeneratorOptions) => {
     dtoSuffix,
     entityPrefix,
     entitySuffix,
+    fileNamingStyle,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};

@@ -34,6 +34,7 @@ generator nestjsDto {
   dtoSuffix                       = "Dto"
   entityPrefix                    = ""
   entitySuffix                    = ""
+  fileNamingStyle                 = "camel"
 }
 ```
 
@@ -50,6 +51,7 @@ All parameters are optional.
 - [`dtoSuffix`]: (default: `"Dto"`) - phrase to suffix every `CreateDTO` and `UpdateDTO` class with
 - [`entityPrefix`]: (default: `""`) - phrase to prefix every `Entity` class with
 - [`entitySuffix`]: (default: `""`) - phrase to suffix every `Entity` class with
+- [`fileNamingStyle`]: (default: `"camel"`) - how to name generated files. Valid choices are `"camel"`, `"pascal"`, `"kebab"` and `"snake"`.
 
 ## <a name="annotations"></a>Annotations
 

@@ -79,3 +79,5 @@ export type WriteableFileSpecs = {
   fileName: string;
   content: string;
 };
+
+export type NamingStyle = 'snake' | 'camel' | 'pascal' | 'kebab';
