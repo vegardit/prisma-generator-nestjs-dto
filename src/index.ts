@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
-import * as path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import makeDir from 'make-dir';
 import { generatorHandler } from '@prisma/generator-helper';
 import { parseEnvValue } from '@prisma/sdk';
@@ -7,7 +7,7 @@ import { parseEnvValue } from '@prisma/sdk';
 import { run } from './generator';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
-import type { WriteableFileSpecs, FileNamingStyle } from './generator/types';
+import type { WriteableFileSpecs, NamingStyle } from './generator/types';
 
 export const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -32,9 +32,7 @@ export const generate = (options: GeneratorOptions) => {
     entityPrefix = '',
     entitySuffix = '',
     fileNamingStyle = 'camel',
-  } = options.generator.config as typeof options.generator.config & {
-    fileNamingStyle?: FileNamingStyle;
-  };
+  } = options.generator.config;
 
   const exportRelationModifierClasses = stringToBoolean(
     options.generator.config.exportRelationModifierClasses,
@@ -54,9 +52,8 @@ export const generate = (options: GeneratorOptions) => {
   );
 
   const supportedFileNamingStyles = ['kebab', 'camel', 'pascal', 'snake'];
-  const isSupportedFileNamingStyle = (
-    style: string,
-  ): style is FileNamingStyle => supportedFileNamingStyles.includes(style);
+  const isSupportedFileNamingStyle = (style: string): style is NamingStyle =>
+    supportedFileNamingStyles.includes(style);
 
   if (!isSupportedFileNamingStyle(fileNamingStyle)) {
     throw new Error(
