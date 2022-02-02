@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { camel, pascal, kebab, snake } from 'case';
 import { logger } from '@prisma/sdk';
 import { makeHelpers } from './template-helpers';
@@ -11,7 +11,7 @@ import { DTO_IGNORE_MODEL } from './annotations';
 import { isAnnotatedWith } from './field-classifiers';
 
 import type { DMMF } from '@prisma/generator-helper';
-import { FileNamingStyle, Model, WriteableFileSpecs } from './types';
+import { NamingStyle, Model, WriteableFileSpecs } from './types';
 
 interface RunParam {
   output: string;
@@ -24,7 +24,7 @@ interface RunParam {
   dtoSuffix: string;
   entityPrefix: string;
   entitySuffix: string;
-  fileNamingStyle: FileNamingStyle;
+  fileNamingStyle: NamingStyle;
 }
 
 export const run = ({
@@ -39,7 +39,7 @@ export const run = ({
     ...preAndSuffixes
   } = options;
 
-  const transformers: Record<FileNamingStyle, (str: string) => string> = {
+  const transformers: Record<NamingStyle, (str: string) => string> = {
     camel,
     kebab,
     pascal,

@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import slash from 'slash';
 import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from '../annotations';
 import { isAnnotatedWith, isRelation, isRequired } from '../field-classifiers';
