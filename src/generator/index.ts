@@ -7,11 +7,12 @@ import { generateConnectDto } from './generate-connect-dto';
 import { generateCreateDto } from './generate-create-dto';
 import { generateUpdateDto } from './generate-update-dto';
 import { generateEntity } from './generate-entity';
-import { DTO_IGNORE_MODEL } from './annotations';
+import { DTO_FOLDER, DTO_IGNORE_MODEL } from './annotations';
 import { isAnnotatedWith } from './field-classifiers';
 
 import type { DMMF } from '@prisma/generator-helper';
 import { NamingStyle, Model, WriteableFileSpecs } from './types';
+import { getOutputFolder } from './model-classifiers';
 
 interface RunParam {
   output: string;
@@ -63,13 +64,25 @@ export const run = ({
       ...model,
       output: {
         dto: outputToNestJsResourceStructure
-          ? path.join(output, transformFileNameCase(model.name), 'dto')
+          ? path.join(
+              output,
+              getOutputFolder(model) || transformFileNameCase(model.name),
+              'dto',
+            )
           : output,
         entity: outputToNestJsResourceStructure
-          ? path.join(output, transformFileNameCase(model.name), 'entities')
+          ? path.join(
+              output,
+              getOutputFolder(model) || transformFileNameCase(model.name),
+              'entities',
+            )
           : output,
       },
     }));
+
+  filteredModels.map((model) =>
+    console.log(isAnnotatedWith(model, DTO_FOLDER)),
+  );
 
   const modelFiles = filteredModels.map((model) => {
     logger.info(`Processing Model ${model.name}`);

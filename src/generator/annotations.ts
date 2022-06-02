@@ -26,3 +26,7 @@ export const DTO_RELATION_MODIFIERS_ON_UPDATE = [
   DTO_RELATION_CAN_CRAEATE_ON_UPDATE,
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
 ];
+export const DTO_FOLDER = /@DtoFolder (?<folder>\w+)/;
+export const DTO_VARIABLES = {
+  folder: DTO_FOLDER,
+};

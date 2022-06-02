@@ -43,7 +43,7 @@ generator nestjsDto {
 All parameters are optional.
 
 - [`output`]: (default: `"../src/generated/nestjs-dto"`) - output path relative to your `schema.prisma` file
-- [`outputToNestJsResourceStructure`]: (default: `"false"`) - writes `dto`s and `entities` to subfolders aligned with [NestJS CRUD generator](https://docs.nestjs.com/recipes/crud-generator). Resource module name is derived from lower-cased model name in `schema.prisma`
+- [`outputToNestJsResourceStructure`]: (default: `"false"`) - writes `dto`s and `entities` to subfolders aligned with [NestJS CRUD generator](https://docs.nestjs.com/recipes/crud-generator). Resource module name is derived from lower-cased model name in `schema.prisma`, or will be overwritten by `@DtoFolder`
 - [`exportRelationModifierClasses`]: (default: `"true"`) - Should extra classes generated for relationship field operations on DTOs be exported?
 - [`reExport`]: (default: `false`) - Should an index.ts be created for every folder?
 - [`createDtoPrefix`]: (default: `"Create"`) - phrase to prefix every `CreateDTO` class with
@@ -66,6 +66,7 @@ model Post {
 ```
 
 - @DtoReadOnly - omits field in `CreateDTO` and `UpdateDTO`
+- @DtoFolder *`<folder>`* - set specific output folder for targeted model - useful when you have module directories with names in plural form
 - @DtoEntityHidden - omits field in `Entity`
 - @DtoCreateOptional - adds field **optionally** to `CreateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
 - @DtoUpdateOptional- adds field **optionally** to `UpdateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)

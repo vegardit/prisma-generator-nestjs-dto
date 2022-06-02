@@ -6,7 +6,7 @@ datasource db {
 generator nestjsDto {
   provider                        = "node -r ts-node/register/transpile-only src/cli.ts"
   output                          = "../src/@generated/prisma-generator-nestjs-dto"
-  outputToNestJsResourceStructure = "false"
+  outputToNestJsResourceStructure = "true"
   exportRelationModifierClasses   = "true"
   reExport                        = "true"
   createDtoPrefix                 = "Create"
@@ -17,6 +17,7 @@ generator nestjsDto {
   fileNamingStyle                 = "camel"
 }
 
+/// @DtoFolder products
 model Product {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @db.VarChar(255)
