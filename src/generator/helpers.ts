@@ -39,9 +39,11 @@ export const makeImportsFromPrismaClient = (
 export const mapDMMFToParsedField = (
   field: DMMF.Field,
   overrides: Partial<DMMF.Field> = {},
+  validatorDecorators: string[] = [],
 ): ParsedField => ({
   ...field,
   ...overrides,
+  validatorDecorators,
 });
 
 export const getRelationScalars = (

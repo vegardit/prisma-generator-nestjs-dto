@@ -30,6 +30,7 @@ import type {
   ImportStatementParams,
   ParsedField,
 } from '../types';
+import { DtoType, getValidatorAnnotations } from '../validator-helpers';
 
 interface ComputeUpdateDtoParamsParam {
   model: Model;
@@ -90,7 +91,17 @@ export const computeUpdateDtoParams = ({
 
     if (field.kind === 'enum') hasEnum = true;
 
-    return [...result, mapDMMFToParsedField(field, overrides)];
+    const [validatorDecorators, validatorImport] = getValidatorAnnotations(
+      field,
+      DtoType.UPDATE,
+    );
+    if (validatorDecorators.length) {
+      imports.push(validatorImport);
+    }
+    return [
+      ...result,
+      mapDMMFToParsedField(field, overrides, validatorDecorators),
+    ];
   }, [] as ParsedField[]);
 
   if (apiExtraModels.length || hasEnum) {

@@ -18,6 +18,7 @@ import type {
   ParsedField,
 } from '../types';
 import type { TemplateHelpers } from '../template-helpers';
+import { DtoType, getValidatorAnnotations } from '../validator-helpers';
 
 interface ComputeEntityParamsParam {
   model: Model;
@@ -110,7 +111,17 @@ export const computeEntityParams = ({
       overrides.isNullable = !isAnyRelationRequired;
     }
 
-    return [...result, mapDMMFToParsedField(field, overrides)];
+    const [validatorDecorators, validatorImport] = getValidatorAnnotations(
+      field,
+      DtoType.ENTITY,
+    );
+    if (validatorDecorators.length) {
+      imports.push(validatorImport);
+    }
+    return [
+      ...result,
+      mapDMMFToParsedField(field, overrides, validatorDecorators),
+    ];
   }, [] as ParsedField[]);
 
   if (apiExtraModels.length)

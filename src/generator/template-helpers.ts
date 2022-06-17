@@ -150,10 +150,12 @@ export const makeHelpers = ({
     `${when(
       field.kind === 'enum',
       `@ApiProperty({ enum: ${fieldType(field, useInputTypes)}})\n`,
-    )}${field.name}${unless(
-      field.isRequired && !forceOptional,
-      '?',
-    )}: ${fieldType(field, useInputTypes)};`;
+    )}${[...(field.validatorDecorators ?? []), ''].join('\n')}${
+      field.name
+    }${unless(field.isRequired && !forceOptional, '?')}: ${fieldType(
+      field,
+      useInputTypes,
+    )};`;
 
   const fieldsToDtoProps = (
     fields: ParsedField[],
@@ -167,7 +169,9 @@ export const makeHelpers = ({
     )}`;
 
   const fieldToEntityProp = (field: ParsedField) =>
-    `${field.name}${unless(field.isRequired, '?')}: ${fieldType(field)} ${when(
+    `${[...(field.validatorDecorators ?? []), ''].join('\n')}${
+      field.name
+    }${unless(field.isRequired, '?')}: ${fieldType(field)} ${when(
       field.isNullable,
       ' | null',
     )};`;

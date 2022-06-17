@@ -20,6 +20,7 @@ export interface ParsedField {
    * **must not be `true` when `isRequired` is `true`**
    */
   isNullable?: boolean;
+  validatorDecorators?: string[];
 }
 
 export interface ExtraModel {
