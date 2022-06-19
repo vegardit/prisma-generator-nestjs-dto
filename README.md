@@ -35,6 +35,7 @@ generator nestjsDto {
   entityPrefix                    = ""
   entitySuffix                    = ""
   fileNamingStyle                 = "camel"
+  enumAsSchema                    = "false"
 }
 ```
 
@@ -52,6 +53,7 @@ All parameters are optional.
 - [`entityPrefix`]: (default: `""`) - phrase to prefix every `Entity` class with
 - [`entitySuffix`]: (default: `""`) - phrase to suffix every `Entity` class with
 - [`fileNamingStyle`]: (default: `"camel"`) - how to name generated files. Valid choices are `"camel"`, `"pascal"`, `"kebab"` and `"snake"`.
+- [`enumAsSchema`]: (default: `"false"`) - Should enum values be reusable schemas? if `"true"`, `enumName` will be attached to `@ApiProperty` options. 
 
 ## <a name="annotations"></a>Annotations
 

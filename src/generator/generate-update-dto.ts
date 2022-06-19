@@ -3,6 +3,7 @@ import type { UpdateDtoParams } from './types';
 
 interface GenerateUpdateDtoParam extends UpdateDtoParams {
   exportRelationModifierClasses: boolean;
+  enumAsSchema: boolean;
   templateHelpers: TemplateHelpers;
 }
 export const generateUpdateDto = ({
@@ -12,6 +13,7 @@ export const generateUpdateDto = ({
   extraClasses,
   apiExtraModels,
   exportRelationModifierClasses,
+  enumAsSchema,
   templateHelpers: t,
 }: GenerateUpdateDtoParam) => `
 ${t.importStatements(imports)}
@@ -24,6 +26,6 @@ ${t.each(
 
 ${t.if(apiExtraModels.length, t.apiExtraModels(apiExtraModels))}
 export class ${t.updateDtoName(model.name)} {
-  ${t.fieldsToDtoProps(fields, true)}
+  ${t.fieldsToDtoProps(fields, enumAsSchema, true)}
 }
 `;

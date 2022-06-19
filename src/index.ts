@@ -51,6 +51,12 @@ export const generate = (options: GeneratorOptions) => {
     false,
   );
 
+  const enumAsSchema = stringToBoolean(
+    options.generator.config.enumAsSchema,
+    // using `true` as default value would be a breaking change
+    false,
+  );
+
   const supportedFileNamingStyles = ['kebab', 'camel', 'pascal', 'snake'];
   const isSupportedFileNamingStyle = (style: string): style is NamingStyle =>
     supportedFileNamingStyles.includes(style);
@@ -75,6 +81,7 @@ export const generate = (options: GeneratorOptions) => {
     entityPrefix,
     entitySuffix,
     fileNamingStyle,
+    enumAsSchema,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};

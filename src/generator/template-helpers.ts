@@ -142,41 +142,52 @@ export const makeHelpers = ({
         : entityName(field.type)
     }${when(field.isList, '[]')}`;
 
-  const fieldToDtoProp = (
+  const requiredDecorators = (
     field: ParsedField,
     useInputTypes = false,
-    forceOptional = false,
+    enumAsSchema = false,
   ) =>
     `${when(
       field.kind === 'enum',
-      `@ApiProperty({ enum: ${fieldType(field, useInputTypes)}})\n`,
-    )}${field.name}${unless(
-      field.isRequired && !forceOptional,
-      '?',
-    )}: ${fieldType(field, useInputTypes)};`;
+      `@ApiProperty({ enum: ${fieldType(field, useInputTypes)}${
+        enumAsSchema ? `, enumName: '${field.type}'` : ``
+      } })\n`,
+    )}`;
+
+  const fieldToDtoProp = (
+    field: ParsedField,
+    enumAsSchema: boolean,
+    useInputTypes = false,
+    forceOptional = false,
+  ) =>
+    `${requiredDecorators(field, useInputTypes, enumAsSchema)}${
+      field.name
+    }${unless(field.isRequired && !forceOptional, '?')}: ${fieldType(
+      field,
+      useInputTypes,
+    )};`;
 
   const fieldsToDtoProps = (
     fields: ParsedField[],
+    enumAsSchema: boolean,
     useInputTypes = false,
     forceOptional = false,
   ) =>
     `${each(
       fields,
-      (field) => fieldToDtoProp(field, useInputTypes, forceOptional),
+      (field) =>
+        fieldToDtoProp(field, enumAsSchema, useInputTypes, forceOptional),
       '\n',
     )}`;
 
-  const fieldToEntityProp = (field: ParsedField) =>
-    `${when(
-      field.kind === 'enum',
-      `@ApiProperty({ enum: ${fieldType(field, false)}})\n`,
-    )}${field.name}${unless(field.isRequired, '?')}: ${fieldType(field)} ${when(
-      field.isNullable,
-      ' | null',
-    )};`;
+  const fieldToEntityProp = (field: ParsedField, enumAsSchema: boolean) =>
+    `${requiredDecorators(field, false, enumAsSchema)}${field.name}${unless(
+      field.isRequired,
+      '?',
+    )}: ${fieldType(field)} ${when(field.isNullable, ' | null')};`;
 
-  const fieldsToEntityProps = (fields: ParsedField[]) =>
-    `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
+  const fieldsToEntityProps = (fields: ParsedField[], enumAsSchema: boolean) =>
+    `${each(fields, (field) => fieldToEntityProp(field, enumAsSchema), '\n')}`;
 
   const apiExtraModels = (names: string[]) =>
     `@ApiExtraModels(${names.map(entityName)})`;

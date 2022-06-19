@@ -25,6 +25,7 @@ interface RunParam {
   entityPrefix: string;
   entitySuffix: string;
   fileNamingStyle: NamingStyle;
+  enumAsSchema: boolean;
 }
 
 export const run = ({
@@ -36,6 +37,7 @@ export const run = ({
     exportRelationModifierClasses,
     outputToNestJsResourceStructure,
     fileNamingStyle = 'camel',
+    enumAsSchema,
     ...preAndSuffixes
   } = options;
 
@@ -89,6 +91,7 @@ export const run = ({
       content: generateConnectDto({
         ...modelParams.connect,
         templateHelpers,
+        enumAsSchema,
       }),
     };
 
@@ -102,6 +105,7 @@ export const run = ({
         ...modelParams.create,
         exportRelationModifierClasses,
         templateHelpers,
+        enumAsSchema,
       }),
     };
     // TODO generate create-model.struct.ts
@@ -116,6 +120,7 @@ export const run = ({
         ...modelParams.update,
         exportRelationModifierClasses,
         templateHelpers,
+        enumAsSchema,
       }),
     };
     // TODO generate update-model.struct.ts
@@ -129,6 +134,7 @@ export const run = ({
       content: generateEntity({
         ...modelParams.entity,
         templateHelpers,
+        enumAsSchema,
       }),
     };
     // TODO generate model.struct.ts
