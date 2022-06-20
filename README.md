@@ -1,3 +1,12 @@
+# Project Status: Looking for new maintainers!
+
+This project is looking for maintainers.
+
+We are not using this package anymore ourselves, so we can no longer validate/review/test any incoming PRs anymore and ensure correct functionality.
+
+If you are an experienced open source contributor and are interested in taking over maintenance, please open a GitHub issue and let's discuss how to proceed.
+
+
 # Prisma Generator NestJS DTO
 
 [![Release](https://badge.fury.io/js/%40vegardit%2Fprisma-generator-nestjs-dto.svg)](https://www.npmjs.com/package/@vegardit/prisma-generator-nestjs-dto)
@@ -69,7 +78,7 @@ model Post {
 - @DtoEntityHidden - omits field in `Entity`
 - @DtoCreateOptional - adds field **optionally** to `CreateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
 - @DtoUpdateOptional- adds field **optionally** to `UpdateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
-- @DtoRelationRequired - marks relation **required** in `Entity` although it's optional in PrismaSchema - useful when you don't want (SQL) `ON DELETE CASCADE` behavior - but your logical data schema sees this relation as required  
+- @DtoRelationRequired - marks relation **required** in `Entity` although it's optional in PrismaSchema - useful when you don't want (SQL) `ON DELETE CASCADE` behavior - but your logical data schema sees this relation as required
   (**Note**: becomes obsolete once [referentialActions](https://github.com/prisma/prisma/issues/7816) are released and stable)
 - @DtoRelationCanCreateOnCreate - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `CreateDTO` - useful when you want to allow to create related model instances
 - @DtoRelationCanConnectOnCreate - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `CreateDTO` - useful when you want/need to connect to an existing related instance
@@ -80,7 +89,7 @@ model Post {
 
 <details>
   <summary>Prisma Schema</summary>
-  
+
   ```prisma
 
 generator nestjsDto {
