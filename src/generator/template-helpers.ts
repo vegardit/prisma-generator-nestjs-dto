@@ -134,10 +134,9 @@ export const makeHelpers = ({
     fileName(name, undefined, '.entity', withExtension);
 
   const fieldType = (field: ParsedField, toInputType = false) =>
-    `${
-      field.kind === 'scalar'
-        ? scalarToTS(field.type, toInputType)
-        : field.kind === 'enum' || field.kind === 'relation-input'
+    `${field.kind === 'scalar'
+      ? scalarToTS(field.type, toInputType)
+      : field.kind === 'enum' || field.kind === 'relation-input'
         ? field.type
         : entityName(field.type)
     }${when(field.isList, '[]')}`;
@@ -176,7 +175,7 @@ export const makeHelpers = ({
     `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
 
   const apiExtraModels = (names: string[]) =>
-    `@ApiExtraModels(${names.map(entityName)})`;
+    `@ApiExtraModels(${names})`;
 
   return {
     config: {
